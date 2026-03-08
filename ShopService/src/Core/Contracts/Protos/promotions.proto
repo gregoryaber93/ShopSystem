@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopService.Contracts.Grpc.Promotions";
+
+package ShopService.promotions.v1;
+
+service PromotionsGrpc {
+  rpc GetPromotionByCode (GetPromotionByCodeRequest) returns (PromotionDto);
+}
+
+message GetPromotionByCodeRequest {
+  string code = 1;
+}
+
+message PromotionDto {
+  string code = 1;
+  string description = 2;
+  int32 discount_percentage = 3;
+}

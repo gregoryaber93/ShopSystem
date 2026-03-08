@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopService.Contracts.Grpc.Orders";
+
+package ShopService.orders.v1;
+
+service OrdersGrpc {
+  rpc GetOrderById (GetOrderByIdRequest) returns (OrderDto);
+}
+
+message GetOrderByIdRequest {
+  string order_id = 1;
+}
+
+message OrderDto {
+  string order_id = 1;
+  string status = 2;
+}

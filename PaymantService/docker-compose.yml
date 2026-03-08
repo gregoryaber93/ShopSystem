@@ -1,0 +1,37 @@
+﻿services:
+  postgres:
+    image: postgres:16
+    container_name: paymantservice-postgres
+    environment:
+      POSTGRES_DB: paymant_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    networks:
+      - paymantservice-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  paymantservice-api:
+    container_name: paymantservice-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5298:8080"
+    networks:
+      - paymantservice-network
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=paymant_service_dev;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
+
+networks:
+  paymantservice-network:
+

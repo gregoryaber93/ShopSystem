@@ -1,0 +1,40 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet build \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\ShopService\\\\ShopService\\.sln\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\AuthenticationService\"; dotnet new sln --name AuthenticationService --force; dotnet sln AuthenticationService\\.sln add src/API/AuthenticationService\\.Api\\.csproj src/Core/Application/AuthenticationService\\.Application\\.csproj src/Core/Contracts/AuthenticationService\\.Contracts\\.csproj src/Core/Domain/AuthenticationService\\.Domain\\.csproj src/Infrastructure/AuthenticationService\\.Infrastructure\\.csproj; dotnet build AuthenticationService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\ShopService\"; dotnet build ShopService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\PromotionService\"; dotnet build PromotionService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\AuthenticationService\"; dotnet build AuthenticationService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build PromotionService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^New-Item -ItemType Directory -Path \"ProductService\\\\src\\\\API\" -Force \\| Out-Null; New-Item -ItemType Directory -Path \"ProductService\\\\src\\\\Core\\\\Application\" -Force \\| Out-Null; New-Item -ItemType Directory -Path \"ProductService\\\\src\\\\Core\\\\Contracts\" -Force \\| Out-Null; New-Item -ItemType Directory -Path \"ProductService\\\\src\\\\Core\\\\Domain\" -Force \\| Out-Null; New-Item -ItemType Directory -Path \"ProductService\\\\src\\\\Infrastructure\" -Force \\| Out-Null; dotnet new sln -n ProductService -o \"ProductService\"; dotnet new webapi -n ProductService\\.Api -o \"ProductService\\\\src\\\\API\" --no-https; dotnet new classlib -n ProductService\\.Application -o \"ProductService\\\\src\\\\Core\\\\Application\"; dotnet new classlib -n ProductService\\.Contracts -o \"ProductService\\\\src\\\\Core\\\\Contracts\"; dotnet new classlib -n ProductService\\.Domain -o \"ProductService\\\\src\\\\Core\\\\Domain\"; dotnet new classlib -n ProductService\\.Infrastructure -o \"ProductService\\\\src\\\\Infrastructure\"; Set-Location \"ProductService\"; dotnet sln add \"src\\\\API\\\\ProductService\\.Api\\.csproj\" \"src\\\\Core\\\\Application\\\\ProductService\\.Application\\.csproj\" \"src\\\\Core\\\\Contracts\\\\ProductService\\.Contracts\\.csproj\" \"src\\\\Core\\\\Domain\\\\ProductService\\.Domain\\.csproj\" \"src\\\\Infrastructure\\\\ProductService\\.Infrastructure\\.csproj\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Get-ChildItem -Recurse -File \\| Where-Object \\{ \\$_\\.FullName -notmatch '\\\\\\\\bin\\\\\\\\\\|\\\\\\\\obj\\\\\\\\' \\} \\| ForEach-Object \\{ \\$_\\.FullName\\.Replace\\(\\(Get-Location\\)\\.Path \\+ '\\\\\\\\',''\\) \\}$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build UserService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option csharp_namespace = "PromotionService.Contracts.Grpc.Promotions";
+
+package promotions;
+
+service PromotionsGrpc {
+  rpc GetPromotions (GetPromotionsRequest) returns (GetPromotionsResponse);
+}
+
+message GetPromotionsRequest {}
+
+message Promotion {
+  string id = 1;
+  double price = 2;
+  repeated string productIds = 3;
+}
+
+message GetPromotionsResponse {
+  repeated Promotion promotions = 1;
+}

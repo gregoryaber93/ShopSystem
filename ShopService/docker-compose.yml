@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: shopservice-postgres
+    environment:
+      POSTGRES_DB: shop_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    networks:
+      - shopservice-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  shopservice-api:
+    container_name: shopservice-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5292:8080"
+    networks:
+      - shopservice-network
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=shop_service_dev;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
+
+networks:
+  shopservice-network:

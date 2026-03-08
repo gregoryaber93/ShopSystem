@@ -1,0 +1,71 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# .NET build output
+**/[Bb]in/
+**/[Oo]bj/
+**/[Dd]ebug/
+**/[Rr]elease/
+**/out/
+**/publish/
+artifacts/
+
+# Visual Studio user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Test output and coverage
+**/TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+coverage.*
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+.nuget/
+
+# IDE
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ReSharper / Rider
+_ReSharper*/
+*.DotSettings.user
+*.sln.iml
+
+# ASP.NET / tooling
+*.pidb
+*.svclog
+
+# Docker local overrides
+docker-compose.override.yml
+
+# Generated or temporary files
+*.tmp
+*.temp
+*.cache

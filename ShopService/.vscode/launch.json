@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug ShopService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ShopService",
+      "program": "${workspaceFolder}/src/API/bin/Debug/net9.0/ShopService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5292"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ]
+}
