@@ -1,6 +1,7 @@
 using OrderService.Application.Abstractions.CQRS;
 using OrderService.Application.Abstractions.Integrations;
 using OrderService.Application.Abstractions.Persistence;
+using OrderService.Application.Features.Orders.EventSourcing;
 using OrderService.Contracts.Dtos;
 using OrderService.Contracts.Messaging;
 using OrderService.Domain.Entities;
@@ -10,6 +11,7 @@ namespace OrderService.Application.Features.Orders.Commands.PlaceOrder;
 
 public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
+    IOrderEventStore orderEventStore,
     IOrderOutboxWriter orderOutboxWriter,
     IProductCatalogGateway productCatalogGateway) : ICommandHandler<PlaceOrderCommand, OrderDto>
 {
@@ -45,6 +47,36 @@ public sealed class PlaceOrderCommandHandler(
         };
 
         await orderRepository.AddAsync(order, cancellationToken);
+
+        var placedEvent = new OrderPlacedEventV1(
+            order.Id,
+            order.UserId,
+            order.ShopId,
+            order.ProductId,
+            order.Quantity,
+            order.UnitPrice,
+            order.TotalPrice,
+            order.OrderedAtUtc,
+            order.Status);
+
+        await orderEventStore.AppendAsync(
+            order.Id,
+            "OrderPlaced",
+            1,
+            JsonSerializer.Serialize(placedEvent),
+            order.OrderedAtUtc,
+            expectedVersion: 0,
+            cancellationToken);
+
+        var state = new OrderAggregateState();
+        state.Apply(placedEvent, 1);
+        await orderEventStore.SaveSnapshotAsync(new OrderSnapshotEntity
+        {
+            AggregateId = order.Id,
+            Version = state.Version,
+            Payload = JsonSerializer.Serialize(state.ToSnapshot()),
+            CreatedAtUtc = DateTime.UtcNow
+        }, cancellationToken);
 
         var integrationEvent = new OrderPlacedIntegrationEventV1(
             EventId: Guid.NewGuid(),

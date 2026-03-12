@@ -11,6 +11,27 @@ public sealed class OrderRepository(OrderDbContext dbContext) : IOrderRepository
         return dbContext.Orders.AddAsync(order, cancellationToken).AsTask();
     }
 
+    public async Task UpsertAsync(OrderEntity order, CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.Orders
+            .FirstOrDefaultAsync(item => item.Id == order.Id, cancellationToken);
+
+        if (existing is null)
+        {
+            await dbContext.Orders.AddAsync(order, cancellationToken);
+            return;
+        }
+
+        existing.UserId = order.UserId;
+        existing.ShopId = order.ShopId;
+        existing.ProductId = order.ProductId;
+        existing.Quantity = order.Quantity;
+        existing.UnitPrice = order.UnitPrice;
+        existing.TotalPrice = order.TotalPrice;
+        existing.OrderedAtUtc = order.OrderedAtUtc;
+        existing.Status = order.Status;
+    }
+
     public Task<OrderEntity?> GetByIdAsync(Guid orderId, CancellationToken cancellationToken)
     {
         return dbContext.Orders

@@ -51,6 +51,34 @@
         "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\PaymantService\"; dotnet build PaymantService\\.sln$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^docker --version$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^docker compose -f docker-compose\\.brokers\\.yml up -d$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\PaymantService\"; docker compose up -d postgres$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build PromotionService/PromotionService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build OrderService/OrderService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\PromotionService\\\\PromotionService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\OrderService\\\\OrderService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

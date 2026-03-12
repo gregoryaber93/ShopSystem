@@ -6,6 +6,8 @@ namespace OrderService.Infrastructure.Persistence;
 public class OrderDbContext(DbContextOptions<OrderDbContext> options) : DbContext(options)
 {
     public DbSet<OrderEntity> Orders => Set<OrderEntity>();
+    public DbSet<OrderEventStreamEntity> OrderEventStreams => Set<OrderEventStreamEntity>();
+    public DbSet<OrderSnapshotEntity> OrderSnapshots => Set<OrderSnapshotEntity>();
     public DbSet<OrderOutboxMessageEntity> OrderOutboxMessages => Set<OrderOutboxMessageEntity>();
     public DbSet<OrderProcessedEventEntity> OrderProcessedEvents => Set<OrderProcessedEventEntity>();
 
@@ -83,6 +85,37 @@ public class OrderDbContext(DbContextOptions<OrderDbContext> options) : DbContex
 
             entity.Property(message => message.LastError)
                 .HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<OrderEventStreamEntity>(entity =>
+        {
+            entity.ToTable("order_event_stream");
+            entity.HasKey(stream => stream.Id);
+
+            entity.HasIndex(stream => new { stream.AggregateId, stream.Version })
+                .IsUnique();
+
+            entity.Property(stream => stream.AggregateType)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(stream => stream.EventType)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(stream => stream.Payload)
+                .HasColumnType("text")
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<OrderSnapshotEntity>(entity =>
+        {
+            entity.ToTable("order_snapshots");
+            entity.HasKey(snapshot => snapshot.AggregateId);
+
+            entity.Property(snapshot => snapshot.Payload)
+                .HasColumnType("text")
+                .IsRequired();
         });
 
         modelBuilder.Entity<OrderProcessedEventEntity>(entity =>

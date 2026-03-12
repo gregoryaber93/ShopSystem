@@ -6,6 +6,7 @@ using OrderService.Application.Abstractions.CQRS;
 using OrderService.Application.Features.Orders.Commands.PlaceOrder;
 using OrderService.Application.Features.Orders.Queries.GetMyOrders;
 using OrderService.Application.Features.Orders.Queries.GetOrdersByShop;
+using OrderService.Application.Features.Orders.Queries.ReplayOrderProjection;
 using OrderService.Contracts.Dtos;
 
 namespace OrderService.Api.Controllers;
@@ -16,7 +17,8 @@ namespace OrderService.Api.Controllers;
 public class OrdersController(
     ICommandHandler<PlaceOrderCommand, OrderDto> placeOrderCommandHandler,
     IQueryHandler<GetMyOrdersQuery, IReadOnlyCollection<OrderDto>> getMyOrdersQueryHandler,
-    IQueryHandler<GetOrdersByShopQuery, IReadOnlyCollection<OrderDto>> getOrdersByShopQueryHandler) : ControllerBase
+    IQueryHandler<GetOrdersByShopQuery, IReadOnlyCollection<OrderDto>> getOrdersByShopQueryHandler,
+    IQueryHandler<ReplayOrderProjectionQuery, OrderDto?> replayOrderProjectionQueryHandler) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = "Admin,Manager,User")]
@@ -65,6 +67,26 @@ public class OrdersController(
         {
             var orders = await getOrdersByShopQueryHandler.Handle(new GetOrdersByShopQuery(shopId), cancellationToken);
             return Ok(orders);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPost("replay/{orderId:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<OrderDto>> ReplayOrderProjection(Guid orderId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rebuilt = await replayOrderProjectionQueryHandler.Handle(new ReplayOrderProjectionQuery(orderId), cancellationToken);
+            if (rebuilt is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(rebuilt);
         }
         catch (ArgumentException exception)
         {

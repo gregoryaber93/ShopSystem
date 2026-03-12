@@ -7,6 +7,8 @@ public class PromotionDbContext(DbContextOptions<PromotionDbContext> options) : 
 {
     public DbSet<PromotionEntity> Promotions => Set<PromotionEntity>();
     public DbSet<UserPromotionProfileEntity> UserPromotionProfiles => Set<UserPromotionProfileEntity>();
+    public DbSet<LoyaltyEventStreamEntity> LoyaltyEventStreams => Set<LoyaltyEventStreamEntity>();
+    public DbSet<LoyaltySnapshotEntity> LoyaltySnapshots => Set<LoyaltySnapshotEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +68,37 @@ public class PromotionDbContext(DbContextOptions<PromotionDbContext> options) : 
 
             entity.Property(profile => profile.LastOrderAtUtc)
                 .HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<LoyaltyEventStreamEntity>(entity =>
+        {
+            entity.ToTable("loyalty_event_stream");
+            entity.HasKey(stream => stream.Id);
+
+            entity.HasIndex(stream => new { stream.AggregateId, stream.Version })
+                .IsUnique();
+
+            entity.Property(stream => stream.AggregateType)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(stream => stream.EventType)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(stream => stream.Payload)
+                .HasColumnType("text")
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<LoyaltySnapshotEntity>(entity =>
+        {
+            entity.ToTable("loyalty_snapshots");
+            entity.HasKey(snapshot => snapshot.AggregateId);
+
+            entity.Property(snapshot => snapshot.Payload)
+                .HasColumnType("text")
+                .IsRequired();
         });
     }
 }

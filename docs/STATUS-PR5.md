@@ -4,7 +4,7 @@
 Implement selective event sourcing for Order and Loyalty domains.
 
 ## Active Checklist
-- `docsEng/CHECKLISTA-PR5-event-sourcing.md`
+- `docs/CHECKLISTA-PR5-event-sourcing.md`
 
 ## Session Scope
 - `OrderService` aggregate event stream
@@ -21,4 +21,4 @@ Implement selective event sourcing for Order and Loyalty domains.
 - Stable read projections fed from events.
 
 ## Next Step
-Define event schema and aggregate versioning strategy before coding.
+Run replay/snapshot/version-conflict tests and verify projection consistency under concurrent writes.

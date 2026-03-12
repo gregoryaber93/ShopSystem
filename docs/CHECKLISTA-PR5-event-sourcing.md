@@ -4,15 +4,15 @@
 Implement event sourcing where it gives real business value.
 
 ## Domain Scope
-- [ ] `OrderService` aggregate.
-- [ ] Loyalty ledger for user-specific promotions.
+- [x] `OrderService` aggregate.
+- [x] Loyalty ledger for user-specific promotions.
 
 ## Implementation Tasks
-- [ ] Define event stream model and event versioning.
-- [ ] Add optimistic concurrency on aggregate version.
-- [ ] Add snapshot strategy.
-- [ ] Add replay and aggregate rehydration.
-- [ ] Add read projections for query APIs.
+- [x] Define event stream model and event versioning.
+- [x] Add optimistic concurrency on aggregate version.
+- [x] Add snapshot strategy.
+- [x] Add replay and aggregate rehydration.
+- [x] Add read projections for query APIs.
 
 ## Tests
 - [ ] Aggregate rebuild from event stream restores correct state.

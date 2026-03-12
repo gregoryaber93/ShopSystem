@@ -6,6 +6,7 @@ using PromotionService.Application.Features.Promotions.Commands.UpsertUserPromot
 using PromotionService.Application.Features.Promotions.Commands.UpdatePromotion;
 using PromotionService.Application.Features.Promotions.Queries.EvaluatePromotions;
 using PromotionService.Application.Features.Promotions.Queries.GetPromotions;
+using PromotionService.Application.Features.Promotions.Queries.ReplayUserLoyaltyProjection;
 using PromotionService.Contracts.Dtos;
 
 namespace PromotionService.Application;
@@ -16,6 +17,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IQueryHandler<GetPromotionsQuery, IReadOnlyCollection<PromotionDto>>, GetPromotionsQueryHandler>();
         services.AddScoped<IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto>, EvaluatePromotionsQueryHandler>();
+        services.AddScoped<IQueryHandler<ReplayUserLoyaltyProjectionQuery, UserPromotionProfileDto?>, ReplayUserLoyaltyProjectionQueryHandler>();
         services.AddScoped<ICommandHandler<AddPromotionCommand, PromotionDto>, AddPromotionCommandHandler>();
         services.AddScoped<ICommandHandler<UpdatePromotionCommand, PromotionDto?>, UpdatePromotionCommandHandler>();
         services.AddScoped<ICommandHandler<DeletePromotionCommand, bool>, DeletePromotionCommandHandler>();

@@ -7,6 +7,7 @@ using PromotionService.Application.Features.Promotions.Commands.UpsertUserPromot
 using PromotionService.Application.Features.Promotions.Commands.UpdatePromotion;
 using PromotionService.Application.Features.Promotions.Queries.EvaluatePromotions;
 using PromotionService.Application.Features.Promotions.Queries.GetPromotions;
+using PromotionService.Application.Features.Promotions.Queries.ReplayUserLoyaltyProjection;
 using PromotionService.Contracts.Dtos;
 
 namespace PromotionService.Api.Controllers;
@@ -17,6 +18,7 @@ namespace PromotionService.Api.Controllers;
 public class PromotionsController(
     IQueryHandler<GetPromotionsQuery, IReadOnlyCollection<PromotionDto>> getPromotionsQueryHandler,
     IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto> evaluatePromotionsQueryHandler,
+    IQueryHandler<ReplayUserLoyaltyProjectionQuery, UserPromotionProfileDto?> replayUserLoyaltyProjectionQueryHandler,
     ICommandHandler<AddPromotionCommand, PromotionDto> addPromotionCommandHandler,
     ICommandHandler<UpdatePromotionCommand, PromotionDto?> updatePromotionCommandHandler,
     ICommandHandler<UpsertUserPromotionProfileCommand, UserPromotionProfileDto> upsertUserPromotionProfileCommandHandler,
@@ -74,6 +76,28 @@ public class PromotionsController(
                 .Handle(new UpsertUserPromotionProfileCommand(profile), cancellationToken);
 
             return Ok(upserted);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPost("replay-user-profile/{userId:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<UserPromotionProfileDto>> ReplayUserProfile(Guid userId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rebuilt = await replayUserLoyaltyProjectionQueryHandler
+                .Handle(new ReplayUserLoyaltyProjectionQuery(userId), cancellationToken);
+
+            if (rebuilt is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(rebuilt);
         }
         catch (ArgumentException exception)
         {

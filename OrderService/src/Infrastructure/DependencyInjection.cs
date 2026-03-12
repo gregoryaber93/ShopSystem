@@ -52,6 +52,8 @@ public static class DependencyInjection
         .AddPolicyHandler(GetTimeoutPolicy());
 
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderEventStore, OrderEventStore>();
+        services.AddScoped<IOrderProjectionRebuilder, OrderProjectionRebuilder>();
         services.AddScoped<IProductCatalogGateway, ProductCatalogGrpcGateway>();
         services.AddScoped<IOrderOutboxWriter, OrderOutboxWriter>();
         services.AddScoped<IOrderOutboxBrokerPublisher, OrderOutboxBrokerPublisher>();

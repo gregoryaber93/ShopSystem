@@ -18,6 +18,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         services.AddScoped<IUserPromotionProfileRepository, UserPromotionProfileRepository>();
+        services.AddScoped<ILoyaltyEventStore, LoyaltyEventStore>();
+        services.AddScoped<ILoyaltyProjectionRebuilder, LoyaltyProjectionRebuilder>();
 
         return services;
     }
