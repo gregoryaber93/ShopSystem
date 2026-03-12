@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OrderService.Api.Grpc;
 using OrderService.Api.Security;
 using OrderService.Application;
 using OrderService.Infrastructure;
@@ -20,6 +21,7 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddGrpc();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -105,6 +107,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGrpcService<OrdersGrpcService>();
         app.MapControllers();
 
         app.Run();

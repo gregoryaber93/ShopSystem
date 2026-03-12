@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "ShopService.Contracts.Grpc.Promotions";
+option csharp_namespace = "ShopSystem.Contracts.Grpc.Promotions";
 
 package shopsystem.promotions.v1;
 

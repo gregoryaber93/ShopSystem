@@ -1,4 +1,5 @@
 using OrderService.Application.Abstractions.Integrations;
+using Grpc.Core;
 using ShopSystem.Contracts.Grpc.Products;
 
 namespace OrderService.Infrastructure.ProductCatalog;
@@ -7,9 +8,25 @@ public sealed class ProductCatalogGrpcGateway(ProductsGrpc.ProductsGrpcClient cl
 {
     public async Task<ProductSnapshot?> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
     {
-        var response = await client.GetProductByIdAsync(
-            new GetProductByIdRequest { ProductId = productId.ToString() },
-            cancellationToken: cancellationToken);
+        GetProductByIdResponse response;
+        try
+        {
+            response = await client.GetProductByIdAsync(
+                new GetProductByIdRequest { ProductId = productId.ToString() },
+                cancellationToken: cancellationToken);
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.DeadlineExceeded)
+        {
+            throw new InvalidOperationException("ProductService request timed out.", exception);
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.Unavailable)
+        {
+            throw new InvalidOperationException("ProductService is unavailable.", exception);
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.Unauthenticated)
+        {
+            throw new InvalidOperationException("ProductService rejected service authentication.", exception);
+        }
 
         if (!response.Found)
         {

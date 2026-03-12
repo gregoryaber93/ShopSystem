@@ -32,6 +32,13 @@ public class OrdersController(
         {
             return BadRequest(new { error = exception.Message });
         }
+        catch (InvalidOperationException exception)
+        {
+            return Problem(
+                title: "gRPC integration failure",
+                detail: exception.Message,
+                statusCode: StatusCodes.Status502BadGateway);
+        }
     }
 
     [HttpGet("my")]

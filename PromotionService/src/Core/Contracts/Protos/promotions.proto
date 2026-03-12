@@ -2,20 +2,59 @@ syntax = "proto3";
 
 option csharp_namespace = "PromotionService.Contracts.Grpc.Promotions";
 
-package promotions;
+package shopsystem.promotions.v1;
+
+import "google/protobuf/timestamp.proto";
 
 service PromotionsGrpc {
   rpc GetPromotions (GetPromotionsRequest) returns (GetPromotionsResponse);
+  rpc EvaluatePromotions (EvaluatePromotionsRequest) returns (EvaluatePromotionsResponse);
 }
 
-message GetPromotionsRequest {}
+enum PromotionType {
+  PROMOTION_TYPE_UNSPECIFIED = 0;
+  PRODUCT_DISCOUNT = 1;
+  LOYALTY_POINTS = 2;
+}
 
 message Promotion {
   string id = 1;
-  double price = 2;
-  repeated string productIds = 3;
+  PromotionType type = 2;
+  double discount_percentage = 3;
+  repeated string product_ids = 4;
+  google.protobuf.Timestamp starts_at_utc = 5;
+  google.protobuf.Timestamp ends_at_utc = 6;
+  double required_points = 7;
+}
+
+message GetPromotionsRequest {
+  bool only_active = 1;
+  google.protobuf.Timestamp evaluated_at_utc = 2;
 }
 
 message GetPromotionsResponse {
   repeated Promotion promotions = 1;
+}
+
+message EvaluatePromotionsRequest {
+  string user_id = 1;
+  double subtotal = 2;
+  repeated string product_ids = 3;
+  google.protobuf.Timestamp evaluated_at_utc = 4;
+}
+
+message AppliedPromotion {
+  string promotion_id = 1;
+  PromotionType type = 2;
+  double discount_percentage = 3;
+  string reason = 4;
+}
+
+message EvaluatePromotionsResponse {
+  string user_id = 1;
+  double subtotal = 2;
+  double total_discount_percentage = 3;
+  double discount_amount = 4;
+  double final_price = 5;
+  repeated AppliedPromotion applied_promotions = 6;
 }

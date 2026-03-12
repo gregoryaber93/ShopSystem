@@ -4,14 +4,14 @@
 Enable real gRPC communication between services and align contracts.
 
 ## Implementation Tasks
-- [ ] Add gRPC server endpoints in `ProductService`.
-- [ ] Add gRPC server endpoints in `PromotionService`.
-- [ ] Add gRPC server endpoints in `OrderService`.
-- [ ] Align `products.proto` with domain model.
-- [ ] Align `promotions.proto` with domain model.
-- [ ] Align `orders.proto` with domain model.
-- [ ] Add service-to-service JWT auth.
-- [ ] Add timeout/retry/circuit policies.
+- [x] Add gRPC server endpoints in `ProductService`.
+- [x] Add gRPC server endpoints in `PromotionService`.
+- [x] Add gRPC server endpoints in `OrderService`.
+- [x] Align `products.proto` with domain model.
+- [x] Align `promotions.proto` with domain model.
+- [x] Align `orders.proto` with domain model.
+- [x] Add service-to-service JWT auth.
+- [x] Add timeout/retry/circuit policies.
 
 ## Tests
 - [ ] Contract tests for proto vs DTO.

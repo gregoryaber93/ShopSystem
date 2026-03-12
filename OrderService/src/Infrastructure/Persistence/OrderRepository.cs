@@ -11,6 +11,13 @@ public sealed class OrderRepository(OrderDbContext dbContext) : IOrderRepository
         return dbContext.Orders.AddAsync(order, cancellationToken).AsTask();
     }
 
+    public Task<OrderEntity?> GetByIdAsync(Guid orderId, CancellationToken cancellationToken)
+    {
+        return dbContext.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(order => order.Id == orderId, cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<OrderEntity>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         return await dbContext.Orders

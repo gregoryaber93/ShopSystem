@@ -7,6 +7,7 @@ using PromotionService.Infrastructure;
 using PromotionService.Infrastructure.Persistence;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PromotionService.Api.Grpc;
 using PromotionService.Api.Security;
 
 namespace PromotionService.Api;
@@ -19,6 +20,7 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddGrpc();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -104,6 +106,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGrpcService<PromotionsGrpcService>();
         app.MapControllers();
 
         app.Run();
