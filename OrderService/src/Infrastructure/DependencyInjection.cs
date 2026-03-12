@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using OrderService.Application.Abstractions.Integrations;
 using OrderService.Application.Abstractions.Persistence;
 using OrderService.Infrastructure.Messaging;
+using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Outbox;
 using OrderService.Infrastructure.ProductCatalog;
 using OrderService.Infrastructure.Persistence;
@@ -24,6 +25,13 @@ public static class DependencyInjection
 
         services.AddDbContext<OrderDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "OrderService:";
+        });
 
         services.Configure<JwtRsaOptions>(configuration.GetSection(JwtRsaOptions.SectionName));
         services.Configure<MessageBrokersOptions>(configuration.GetSection(MessageBrokersOptions.SectionName));
@@ -58,6 +66,13 @@ public static class DependencyInjection
         services.AddScoped<IOrderOutboxWriter, OrderOutboxWriter>();
         services.AddScoped<IOrderOutboxBrokerPublisher, OrderOutboxBrokerPublisher>();
         services.AddHostedService<OrderOutboxPublisherWorker>();
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

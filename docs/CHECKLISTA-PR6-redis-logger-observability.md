@@ -4,16 +4,16 @@
 Add caching, centralized logging, and full traceability.
 
 ## Implementation Tasks
-- [ ] Add Redis (`IDistributedCache`) in key services.
-- [ ] Cache: products per shop.
-- [ ] Cache: active promotions.
-- [ ] Cache: user-specific eligibility.
-- [ ] Add idempotency keys for `POST /orders` and `POST /payments`.
-- [ ] Add `CorrelationId` middleware for all APIs.
-- [ ] Add exception/problem logging middleware.
-- [ ] Add HTTP client for `LoggerService` with fallback.
-- [ ] Move `LoggerService` from in-memory to persistent storage.
-- [ ] Add OpenTelemetry traces/metrics/log correlation.
+- [x] Add Redis (`IDistributedCache`) in key services.
+- [x] Cache: products per shop.
+- [x] Cache: active promotions.
+- [x] Cache: user-specific eligibility.
+- [x] Add idempotency keys for `POST /orders` and `POST /payments`.
+- [x] Add `CorrelationId` middleware for all APIs.
+- [x] Add exception/problem logging middleware.
+- [x] Add HTTP client for `LoggerService` with fallback.
+- [x] Move `LoggerService` from in-memory to persistent storage.
+- [x] Add OpenTelemetry traces/metrics/log correlation.
 
 ## Tests
 - [ ] `CorrelationId` propagates through service call chain.

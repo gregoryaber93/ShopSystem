@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductService.Application.Abstractions.Persistence;
+using ProductService.Application.Abstractions.Caching;
+using ProductService.Infrastructure.Caching;
+using ProductService.Infrastructure.Observability;
 using ProductService.Infrastructure.Persistence;
 
 namespace ProductService.Infrastructure;
@@ -17,6 +20,21 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductCacheService, ProductCacheService>();
+
+        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "ProductService:";
+        });
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

@@ -7,7 +7,10 @@ using PromotionService.Infrastructure;
 using PromotionService.Infrastructure.Persistence;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using PromotionService.Api.Grpc;
+using PromotionService.Api.Middleware;
 using PromotionService.Api.Security;
 
 namespace PromotionService.Api;
@@ -50,6 +53,16 @@ public class Program
                 }
             });
         });
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter())
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter());
 
         var jwtRsaOptions = builder.Configuration.GetSection(JwtRsaOptions.SectionName).Get<JwtRsaOptions>()
             ?? throw new InvalidOperationException("JwtRsa section is missing in configuration.");
@@ -103,6 +116,9 @@ public class Program
         {
             app.UseHttpsRedirection();
         }
+
+            app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<ExceptionLoggingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

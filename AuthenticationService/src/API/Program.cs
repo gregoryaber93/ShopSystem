@@ -1,7 +1,10 @@
 using AuthenticationService.Application;
+using AuthenticationService.Api.Middleware;
 using AuthenticationService.Infrastructure;
 using AuthenticationService.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace AuthenticationService.Api;
 
@@ -28,6 +31,16 @@ public class Program
             });
         });
 
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter())
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter());
+
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
@@ -50,6 +63,8 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<ExceptionLoggingMiddleware>();
         app.UseAuthorization();
         app.MapControllers();
 

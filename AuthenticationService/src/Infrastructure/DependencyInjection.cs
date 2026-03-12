@@ -1,5 +1,6 @@
 using AuthenticationService.Application.Abstractions.Persistence;
 using AuthenticationService.Application.Abstractions.Security;
+using AuthenticationService.Infrastructure.Observability;
 using AuthenticationService.Infrastructure.Persistence;
 using AuthenticationService.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,13 @@ public static class DependencyInjection
         services.AddScoped<IAuthUserRepository, AuthUserRepository>();
         services.AddSingleton<IPasswordHasherService, Pbkdf2PasswordHasherService>();
         services.AddSingleton<IJwtTokenService, RsaJwtTokenService>();
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

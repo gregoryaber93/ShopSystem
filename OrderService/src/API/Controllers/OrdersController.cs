@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Abstractions.CQRS;
@@ -16,6 +17,7 @@ namespace OrderService.Api.Controllers;
 [Authorize(Roles = "Admin,Manager,User")]
 public class OrdersController(
     ICommandHandler<PlaceOrderCommand, OrderDto> placeOrderCommandHandler,
+    IDistributedCache distributedCache,
     IQueryHandler<GetMyOrdersQuery, IReadOnlyCollection<OrderDto>> getMyOrdersQueryHandler,
     IQueryHandler<GetOrdersByShopQuery, IReadOnlyCollection<OrderDto>> getOrdersByShopQueryHandler,
     IQueryHandler<ReplayOrderProjectionQuery, OrderDto?> replayOrderProjectionQueryHandler) : ControllerBase
@@ -26,8 +28,26 @@ public class OrdersController(
     {
         try
         {
+            var idempotencyKey = Request.Headers["Idempotency-Key"].ToString();
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                return BadRequest(new { error = "Idempotency-Key header is required." });
+            }
+
             var userId = ResolveUserId(User);
+            var cacheKey = $"idempotency:orders:{userId:N}:{idempotencyKey}";
+            var existingOrderId = await distributedCache.GetStringAsync(cacheKey, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(existingOrderId) && Guid.TryParse(existingOrderId, out var parsedOrderId))
+            {
+                return Ok(new { orderId = parsedOrderId, duplicate = true });
+            }
+
             var order = await placeOrderCommandHandler.Handle(new PlaceOrderCommand(userId, request), cancellationToken);
+            await distributedCache.SetStringAsync(cacheKey, order.Id.ToString("D"), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
+            }, cancellationToken);
+
             return Created($"/api/orders/{order.Id}", order);
         }
         catch (ArgumentException exception)

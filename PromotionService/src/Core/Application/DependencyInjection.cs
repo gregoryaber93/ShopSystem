@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PromotionService.Application.Abstractions.Caching;
 using PromotionService.Application.Abstractions.CQRS;
 using PromotionService.Application.Features.Promotions.Commands.AddPromotion;
 using PromotionService.Application.Features.Promotions.Commands.DeletePromotion;

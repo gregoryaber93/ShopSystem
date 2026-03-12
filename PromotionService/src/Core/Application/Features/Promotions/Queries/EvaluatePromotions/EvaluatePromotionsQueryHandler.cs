@@ -1,11 +1,12 @@
 using PromotionService.Application.Abstractions.CQRS;
+using PromotionService.Application.Abstractions.Caching;
 using PromotionService.Application.Abstractions.Persistence;
 using PromotionService.Contracts.Dtos;
 using PromotionService.Domain.Entities;
 
 namespace PromotionService.Application.Features.Promotions.Queries.EvaluatePromotions;
-
 public sealed class EvaluatePromotionsQueryHandler(
+    IPromotionCacheService promotionCacheService,
     IPromotionRepository promotionRepository,
     IUserPromotionProfileRepository userPromotionProfileRepository) : IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto>
 {
@@ -13,9 +14,23 @@ public sealed class EvaluatePromotionsQueryHandler(
     {
         Validate(query.Request);
 
-        var evaluatedAtUtc = query.Request.EvaluatedAtUtc ?? DateTime.UtcNow;
-        var requestedProductIds = (query.Request.ProductIds ?? [])
+        var normalizedProductIds = (query.Request.ProductIds ?? [])
             .Where(productId => productId != Guid.Empty)
+            .OrderBy(productId => productId)
+            .ToArray();
+
+        var cachedEligibility = await promotionCacheService.GetEligibilityAsync(
+            query.Request.UserId,
+            normalizedProductIds,
+            query.Request.Subtotal,
+            cancellationToken);
+        if (cachedEligibility is not null)
+        {
+            return cachedEligibility;
+        }
+
+        var evaluatedAtUtc = query.Request.EvaluatedAtUtc ?? DateTime.UtcNow;
+        var requestedProductIds = normalizedProductIds
             .ToHashSet();
 
         var promotions = await promotionRepository.GetAllAsync(cancellationToken);
@@ -66,13 +81,23 @@ public sealed class EvaluatePromotionsQueryHandler(
             finalPrice = 0;
         }
 
-        return new PromotionEvaluationResultDto(
+        var result = new PromotionEvaluationResultDto(
             query.Request.UserId,
             query.Request.Subtotal,
             totalDiscountPercentage,
             discountAmount,
             finalPrice,
             applied);
+
+        await promotionCacheService.SetEligibilityAsync(
+            query.Request.UserId,
+            normalizedProductIds,
+            query.Request.Subtotal,
+            result,
+            TimeSpan.FromMinutes(2),
+            cancellationToken);
+
+        return result;
     }
 
     private static bool IsActive(PromotionEntity promotion, DateTime evaluatedAtUtc)

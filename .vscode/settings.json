@@ -79,6 +79,30 @@
         "/^dotnet build \\.\\.\\\\OrderService\\\\OrderService\\.sln$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\ProductService\\\\ProductService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\\\PaymantService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\ShopService\\\\ShopService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\UserService\\\\UserService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\AuthenticationService\\\\AuthenticationService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build \\.\\.\\\\LoggerService\\\\LoggerService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

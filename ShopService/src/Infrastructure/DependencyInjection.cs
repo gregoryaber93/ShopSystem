@@ -10,6 +10,7 @@ using ShopService.Contracts.Grpc.Products;
 using ShopService.Contracts.Grpc.Promotions;
 using ShopService.Infrastructure.Integrations;
 using ShopService.Infrastructure.Messaging;
+using ShopService.Infrastructure.Observability;
 using ShopService.Infrastructure.Persistence;
 using ShopService.Infrastructure.Security;
 using Polly;
@@ -38,6 +39,13 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, RsaJwtTokenService>();
 
         services.AddGrpcClients();
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

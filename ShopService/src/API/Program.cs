@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using ShopService.Application;
+using ShopService.Api.Middleware;
 using ShopService.Infrastructure;
 using ShopService.Infrastructure.Persistence;
 using ShopService.Infrastructure.Security;
@@ -49,6 +52,16 @@ public class Program
                 }
             });
         });
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter())
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter());
 
         var jwtRsaOptions = builder.Configuration.GetSection(JwtRsaOptions.SectionName).Get<JwtRsaOptions>()
             ?? throw new InvalidOperationException("JwtRsa section is missing in configuration.");
@@ -104,6 +117,9 @@ public class Program
         }
         app.UseAuthentication();
         app.UseAuthorization();
+
+            app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<ExceptionLoggingMiddleware>();
         app.MapControllers();
 
         app.Run();

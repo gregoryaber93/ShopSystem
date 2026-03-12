@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymantService.Application.Abstractions.CQRS;
@@ -15,6 +16,7 @@ namespace PaymantService.Api.Controllers;
 [Authorize(Roles = "Admin,Manager,User")]
 public class PaymentsController(
     ICommandHandler<ProcessPaymentCommand, PaymentDto> processPaymentCommandHandler,
+    IDistributedCache distributedCache,
     IQueryHandler<GetMyPaymentsQuery, IReadOnlyCollection<PaymentDto>> getMyPaymentsQueryHandler,
     IQueryHandler<GetPaymentsByShopQuery, IReadOnlyCollection<PaymentDto>> getPaymentsByShopQueryHandler) : ControllerBase
 {
@@ -24,8 +26,26 @@ public class PaymentsController(
     {
         try
         {
+            var idempotencyKey = Request.Headers["Idempotency-Key"].ToString();
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                return BadRequest(new { error = "Idempotency-Key header is required." });
+            }
+
             var userId = ResolveUserId(User);
+            var cacheKey = $"idempotency:payments:{userId:N}:{idempotencyKey}";
+            var existingPaymentId = await distributedCache.GetStringAsync(cacheKey, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(existingPaymentId) && Guid.TryParse(existingPaymentId, out var parsedPaymentId))
+            {
+                return Ok(new { paymentId = parsedPaymentId, duplicate = true });
+            }
+
             var payment = await processPaymentCommandHandler.Handle(new ProcessPaymentCommand(userId, request), cancellationToken);
+            await distributedCache.SetStringAsync(cacheKey, payment.Id.ToString("D"), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
+            }, cancellationToken);
+
             return Created($"/api/payments/{payment.Id}", payment);
         }
         catch (ArgumentException exception)

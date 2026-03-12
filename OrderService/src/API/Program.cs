@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using OrderService.Api.Grpc;
+using OrderService.Api.Middleware;
 using OrderService.Api.Security;
 using OrderService.Application;
 using OrderService.Infrastructure;
@@ -51,6 +54,16 @@ public class Program
                 }
             });
         });
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter())
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter());
 
         var jwtRsaOptions = builder.Configuration.GetSection(JwtRsaOptions.SectionName).Get<JwtRsaOptions>()
             ?? throw new InvalidOperationException("JwtRsa section is missing in configuration.");
@@ -104,6 +117,9 @@ public class Program
         {
             app.UseHttpsRedirection();
         }
+
+            app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<ExceptionLoggingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

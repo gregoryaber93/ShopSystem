@@ -4,7 +4,7 @@
 Deliver Redis cache, centralized logging, and observability baseline.
 
 ## Active Checklist
-- `docsEng/CHECKLISTA-PR6-redis-logger-observability.md`
+- `docs/CHECKLISTA-PR6-redis-logger-observability.md`
 
 ## Session Scope
 - cache integration in core services
@@ -22,4 +22,4 @@ Deliver Redis cache, centralized logging, and observability baseline.
 - CorrelationId and trace context across services.
 
 ## Next Step
-Add correlation middleware and logger client first, then cache layers.
+Execute runtime/integration validation for correlation propagation, LoggerService ingestion, cache invalidation, and idempotency behavior.

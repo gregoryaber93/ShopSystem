@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Application.Abstractions.Persistence;
 using UserService.Application.Abstractions.Security;
+using UserService.Infrastructure.Observability;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Security;
 
@@ -25,6 +26,13 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddSingleton<IPasswordHasherService, Pbkdf2PasswordHasherService>();
         services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }

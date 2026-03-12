@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymantService.Application.Abstractions.Persistence;
 using PaymantService.Infrastructure.Messaging;
+using PaymantService.Infrastructure.Observability;
 using PaymantService.Infrastructure.Outbox;
 using PaymantService.Infrastructure.Persistence;
 
@@ -18,6 +19,13 @@ public static class DependencyInjection
         services.AddDbContext<PaymentDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "PaymantService:";
+        });
+
         services.Configure<MessageBrokersOptions>(configuration.GetSection(MessageBrokersOptions.SectionName));
         services.Configure<PaymentOutboxOptions>(configuration.GetSection(PaymentOutboxOptions.SectionName));
 
@@ -25,6 +33,13 @@ public static class DependencyInjection
         services.AddScoped<IPaymentOutboxWriter, PaymentOutboxWriter>();
         services.AddScoped<IPaymentOutboxBrokerPublisher, PaymentOutboxBrokerPublisher>();
         services.AddHostedService<PaymentOutboxPublisherWorker>();
+
+        var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
+        services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri(loggerServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         return services;
     }
