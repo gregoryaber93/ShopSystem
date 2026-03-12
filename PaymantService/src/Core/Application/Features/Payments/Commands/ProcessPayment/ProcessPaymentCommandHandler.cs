@@ -1,11 +1,15 @@
 ﻿using PaymantService.Application.Abstractions.CQRS;
 using PaymantService.Application.Abstractions.Persistence;
 using PaymantService.Contracts.Dtos;
+using PaymantService.Contracts.Messaging;
 using PaymantService.Domain.Entities;
+using System.Text.Json;
 
 namespace PaymantService.Application.Features.Payments.Commands.ProcessPayment;
 
-public sealed class ProcessPaymentCommandHandler(IPaymentRepository paymentRepository) : ICommandHandler<ProcessPaymentCommand, PaymentDto>
+public sealed class ProcessPaymentCommandHandler(
+    IPaymentRepository paymentRepository,
+    IPaymentOutboxWriter paymentOutboxWriter) : ICommandHandler<ProcessPaymentCommand, PaymentDto>
 {
     public async Task<PaymentDto> Handle(ProcessPaymentCommand command, CancellationToken cancellationToken)
     {
@@ -29,6 +33,27 @@ public sealed class ProcessPaymentCommandHandler(IPaymentRepository paymentRepos
         };
 
         await paymentRepository.AddAsync(payment, cancellationToken);
+
+        var integrationEvent = new PaymentAuthorizedIntegrationEventV1(
+            EventId: Guid.NewGuid(),
+            OccurredOnUtc: payment.PaidAtUtc,
+            PaymentId: payment.Id,
+            UserId: payment.UserId,
+            ShopId: payment.ShopId,
+            OrderId: payment.OrderId,
+            Amount: payment.Amount,
+            Currency: payment.Currency,
+            Method: payment.Method,
+            Status: payment.Status);
+
+        await paymentOutboxWriter.EnqueueAsync(
+            integrationEvent.EventId,
+            "PaymentAuthorized",
+            JsonSerializer.Serialize(integrationEvent),
+            payment.UserId.ToString("N"),
+            integrationEvent.OccurredOnUtc,
+            cancellationToken);
+
         await paymentRepository.SaveChangesAsync(cancellationToken);
 
         return ToDto(payment);

@@ -47,6 +47,10 @@
         "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\OrderService\"; dotnet build OrderService\\.sln$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\PaymantService\"; dotnet build PaymantService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

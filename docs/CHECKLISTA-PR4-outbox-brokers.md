@@ -4,14 +4,14 @@
 Implement reliable event publishing and real broker flows.
 
 ## Implementation Tasks
-- [ ] Add Outbox table in `OrderService`.
-- [ ] Add Outbox table in `PaymantService`.
-- [ ] Implement worker that publishes from outbox.
-- [ ] Replace placeholder `RabbitMqEventPublisher` with real publishing.
-- [ ] Replace placeholder `KafkaEventPublisher` with real publishing.
-- [ ] Add DLQ/retry strategy for RabbitMQ.
-- [ ] Add topic naming and partition key policy for Kafka.
-- [ ] Add idempotent consumer by `EventId`.
+- [x] Add Outbox table in `OrderService`.
+- [x] Add Outbox table in `PaymantService`.
+- [x] Implement worker that publishes from outbox.
+- [x] Replace placeholder `RabbitMqEventPublisher` with real publishing.
+- [x] Replace placeholder `KafkaEventPublisher` with real publishing.
+- [x] Add DLQ/retry strategy for RabbitMQ.
+- [x] Add topic naming and partition key policy for Kafka.
+- [x] Add idempotent consumer by `EventId`.
 
 ## Tests
 - [ ] Event is not lost during broker failure.

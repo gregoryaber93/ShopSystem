@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymantService.Application.Abstractions.Persistence;
+using PaymantService.Infrastructure.Messaging;
+using PaymantService.Infrastructure.Outbox;
 using PaymantService.Infrastructure.Persistence;
 
 namespace PaymantService.Infrastructure;
@@ -16,7 +18,13 @@ public static class DependencyInjection
         services.AddDbContext<PaymentDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.Configure<MessageBrokersOptions>(configuration.GetSection(MessageBrokersOptions.SectionName));
+        services.Configure<PaymentOutboxOptions>(configuration.GetSection(PaymentOutboxOptions.SectionName));
+
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IPaymentOutboxWriter, PaymentOutboxWriter>();
+        services.AddScoped<IPaymentOutboxBrokerPublisher, PaymentOutboxBrokerPublisher>();
+        services.AddHostedService<PaymentOutboxPublisherWorker>();
 
         return services;
     }

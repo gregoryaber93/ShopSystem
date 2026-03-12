@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OrderService.Application.Abstractions.Integrations;
 using OrderService.Application.Abstractions.Persistence;
+using OrderService.Infrastructure.Messaging;
+using OrderService.Infrastructure.Outbox;
 using OrderService.Infrastructure.ProductCatalog;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Security;
@@ -24,6 +26,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<JwtRsaOptions>(configuration.GetSection(JwtRsaOptions.SectionName));
+        services.Configure<MessageBrokersOptions>(configuration.GetSection(MessageBrokersOptions.SectionName));
+        services.Configure<OrderOutboxOptions>(configuration.GetSection(OrderOutboxOptions.SectionName));
         services.AddSingleton<IJwtTokenService, RsaJwtTokenService>();
 
         var grpcAddress = configuration[$"{ProductCatalogGrpcOptions.SectionName}:Address"];
@@ -49,6 +53,9 @@ public static class DependencyInjection
 
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IProductCatalogGateway, ProductCatalogGrpcGateway>();
+        services.AddScoped<IOrderOutboxWriter, OrderOutboxWriter>();
+        services.AddScoped<IOrderOutboxBrokerPublisher, OrderOutboxBrokerPublisher>();
+        services.AddHostedService<OrderOutboxPublisherWorker>();
 
         return services;
     }

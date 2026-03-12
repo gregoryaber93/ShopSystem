@@ -22,4 +22,4 @@ Implement reliable outbox-based event publishing and broker delivery.
 - Idempotent consume strategy by `EventId`.
 
 ## Next Step
-Implement outbox persistence first, then worker publishing.
+Outbox persistence and worker publishing are implemented in `OrderService` and `PaymantService`, and broker publishers are now real in `ShopService`.

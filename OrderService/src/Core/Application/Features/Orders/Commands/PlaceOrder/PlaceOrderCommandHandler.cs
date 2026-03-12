@@ -2,12 +2,15 @@ using OrderService.Application.Abstractions.CQRS;
 using OrderService.Application.Abstractions.Integrations;
 using OrderService.Application.Abstractions.Persistence;
 using OrderService.Contracts.Dtos;
+using OrderService.Contracts.Messaging;
 using OrderService.Domain.Entities;
+using System.Text.Json;
 
 namespace OrderService.Application.Features.Orders.Commands.PlaceOrder;
 
 public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
+    IOrderOutboxWriter orderOutboxWriter,
     IProductCatalogGateway productCatalogGateway) : ICommandHandler<PlaceOrderCommand, OrderDto>
 {
     public async Task<OrderDto> Handle(PlaceOrderCommand command, CancellationToken cancellationToken)
@@ -42,6 +45,27 @@ public sealed class PlaceOrderCommandHandler(
         };
 
         await orderRepository.AddAsync(order, cancellationToken);
+
+        var integrationEvent = new OrderPlacedIntegrationEventV1(
+            EventId: Guid.NewGuid(),
+            OccurredOnUtc: order.OrderedAtUtc,
+            OrderId: order.Id,
+            UserId: order.UserId,
+            ShopId: order.ShopId,
+            ProductId: order.ProductId,
+            Quantity: order.Quantity,
+            UnitPrice: order.UnitPrice,
+            TotalPrice: order.TotalPrice,
+            Status: order.Status);
+
+        await orderOutboxWriter.EnqueueAsync(
+            integrationEvent.EventId,
+            "OrderPlaced",
+            JsonSerializer.Serialize(integrationEvent),
+            order.UserId.ToString("N"),
+            integrationEvent.OccurredOnUtc,
+            cancellationToken);
+
         await orderRepository.SaveChangesAsync(cancellationToken);
 
         return ToDto(order);

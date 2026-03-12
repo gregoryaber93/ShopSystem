@@ -1,4 +1,4 @@
-namespace ShopService.Infrastructure.Messaging;
+namespace PaymantService.Infrastructure.Messaging;
 
 public sealed class MessageBrokersOptions
 {
@@ -19,18 +19,14 @@ public sealed class RabbitMqOptions
 
     public string Password { get; set; } = "guest";
 
-    public string Exchange { get; set; } = "ShopService.exchange";
+    public string Exchange { get; set; } = "PaymantService.exchange";
 
-    public string DeadLetterExchange { get; set; } = "ShopService.exchange.dlq";
-
-    public int RetryDelayMilliseconds { get; set; } = 5000;
+    public string DeadLetterExchange { get; set; } = "PaymantService.exchange.dlq";
 }
 
 public sealed class KafkaOptions
 {
     public string BootstrapServers { get; set; } = "localhost:9092";
 
-    public string TopicPrefix { get; set; } = "shop";
-
-    public int DefaultPartitions { get; set; } = 3;
+    public string TopicPrefix { get; set; } = "payments";
 }
