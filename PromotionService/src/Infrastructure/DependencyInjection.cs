@@ -17,6 +17,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
+        services.AddScoped<IUserPromotionProfileRepository, UserPromotionProfileRepository>();
 
         return services;
     }

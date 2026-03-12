@@ -10,7 +10,7 @@ public record PromotionDto(
 	Guid Id,
 	PromotionTypeDto Type,
 	decimal DiscountPercentage,
-	IReadOnlyCollection<Guid> ProductIds,
+	IReadOnlyCollection<Guid>? ProductIds,
 	DateTime? StartsAtUtc,
 	DateTime? EndsAtUtc,
 	decimal? RequiredPoints);

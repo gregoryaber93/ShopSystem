@@ -4,11 +4,11 @@
 Harden order calculations and implement user-specific promotion rules.
 
 ## Implementation Tasks
-- [ ] `OrderService`: calculate final price on backend.
-- [ ] `OrderService`: fetch product data from `ProductService` (gRPC) instead of trusting request payload.
-- [ ] `PromotionService`: refine validation for `ProductDiscount` and `LoyaltyPoints`.
-- [ ] `PromotionService`: add/extend user-specific evaluation based on purchase history.
-- [ ] Add a read model for points/purchase history.
+- [x] `OrderService`: calculate final price on backend.
+- [x] `OrderService`: fetch product data from `ProductService` (gRPC) instead of trusting request payload.
+- [x] `PromotionService`: refine validation for `ProductDiscount` and `LoyaltyPoints`.
+- [x] `PromotionService`: add/extend user-specific evaluation based on purchase history.
+- [x] Add a read model for points/purchase history.
 
 ## Tests
 - [ ] Changing request price does not change final order price.

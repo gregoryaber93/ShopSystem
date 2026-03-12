@@ -35,6 +35,18 @@
         "/^dotnet build UserService\\.sln$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\UserService\"; dotnet build UserService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\ProductService\"; dotnet build ProductService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\OrderService\"; dotnet build OrderService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

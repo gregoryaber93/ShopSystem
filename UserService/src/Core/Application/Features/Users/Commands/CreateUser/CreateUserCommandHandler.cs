@@ -13,7 +13,6 @@ public sealed class CreateUserCommandHandler(
 {
     private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Admin",
         "Manager",
         "User"
     };
@@ -31,7 +30,7 @@ public sealed class CreateUserCommandHandler(
             return null;
         }
 
-        var roles = command.Request.Roles
+        var roles = (command.Request.Roles ?? [])
             .Where(role => !string.IsNullOrWhiteSpace(role))
             .Select(role => role.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -40,6 +39,11 @@ public sealed class CreateUserCommandHandler(
         if (roles.Length == 0)
         {
             roles = ["User"];
+        }
+
+        if (roles.Any(role => string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("Rola Admin nie moze byc tworzona przez endpoint tworzenia uzytkownikow.");
         }
 
         var invalidRoles = roles.Where(role => !AllowedRoles.Contains(role)).ToArray();

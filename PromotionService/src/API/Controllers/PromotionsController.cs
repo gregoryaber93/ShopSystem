@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using PromotionService.Application.Abstractions.CQRS;
 using PromotionService.Application.Features.Promotions.Commands.AddPromotion;
 using PromotionService.Application.Features.Promotions.Commands.DeletePromotion;
+using PromotionService.Application.Features.Promotions.Commands.UpsertUserPromotionProfile;
 using PromotionService.Application.Features.Promotions.Commands.UpdatePromotion;
+using PromotionService.Application.Features.Promotions.Queries.EvaluatePromotions;
 using PromotionService.Application.Features.Promotions.Queries.GetPromotions;
 using PromotionService.Contracts.Dtos;
 
@@ -14,8 +16,10 @@ namespace PromotionService.Api.Controllers;
 [Authorize(Roles = "Admin,Manager,User")]
 public class PromotionsController(
     IQueryHandler<GetPromotionsQuery, IReadOnlyCollection<PromotionDto>> getPromotionsQueryHandler,
+    IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto> evaluatePromotionsQueryHandler,
     ICommandHandler<AddPromotionCommand, PromotionDto> addPromotionCommandHandler,
     ICommandHandler<UpdatePromotionCommand, PromotionDto?> updatePromotionCommandHandler,
+    ICommandHandler<UpsertUserPromotionProfileCommand, UserPromotionProfileDto> upsertUserPromotionProfileCommandHandler,
     ICommandHandler<DeletePromotionCommand, bool> deletePromotionCommandHandler) : ControllerBase
 {
     [HttpGet("getPromotions")]
@@ -34,6 +38,42 @@ public class PromotionsController(
         {
             var createdPromotion = await addPromotionCommandHandler.Handle(new AddPromotionCommand(promotionDto), cancellationToken);
             return Created($"/api/promotions/{createdPromotion.Id}", createdPromotion);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPost("evaluate")]
+    [Authorize(Roles = "Admin,Manager,User")]
+    public async Task<ActionResult<PromotionEvaluationResultDto>> EvaluatePromotions(
+        [FromBody] PromotionEvaluationRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var evaluation = await evaluatePromotionsQueryHandler.Handle(new EvaluatePromotionsQuery(request), cancellationToken);
+            return Ok(evaluation);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPut("user-profile")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<UserPromotionProfileDto>> UpsertUserProfile(
+        [FromBody] UserPromotionProfileDto profile,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var upserted = await upsertUserPromotionProfileCommandHandler
+                .Handle(new UpsertUserPromotionProfileCommand(profile), cancellationToken);
+
+            return Ok(upserted);
         }
         catch (ArgumentException exception)
         {

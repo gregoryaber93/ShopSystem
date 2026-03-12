@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProductService.Api.Security;
+using ProductService.Api.Grpc;
 using ProductService.Application;
 using ProductService.Infrastructure;
 using ProductService.Infrastructure.Persistence;
@@ -20,6 +21,7 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddGrpc();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -105,6 +107,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGrpcService<ProductsGrpcService>();
         app.MapControllers();
 
         app.Run();

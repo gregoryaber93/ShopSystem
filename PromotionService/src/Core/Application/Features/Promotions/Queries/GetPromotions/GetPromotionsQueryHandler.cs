@@ -16,7 +16,7 @@ public sealed class GetPromotionsQueryHandler(IPromotionRepository promotionRepo
                 promotion.Id,
                 MapType(promotion.Type),
                 promotion.DiscountPercentage,
-                promotion.ProductIds,
+                promotion.ProductIds ?? [],
                 promotion.StartsAtUtc,
                 promotion.EndsAtUtc,
                 promotion.RequiredPoints))

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopSystem.Contracts.Grpc.Products";
+
+package shopsystem.products.v1;
+
+service ProductsGrpc {
+  rpc GetProductById (GetProductByIdRequest) returns (GetProductByIdResponse);
+}
+
+message GetProductByIdRequest {
+  string product_id = 1;
+}
+
+message GetProductByIdResponse {
+  bool found = 1;
+  string product_id = 2;
+  string shop_id = 3;
+  double price = 4;
+  string name = 5;
+  string type = 6;
+}

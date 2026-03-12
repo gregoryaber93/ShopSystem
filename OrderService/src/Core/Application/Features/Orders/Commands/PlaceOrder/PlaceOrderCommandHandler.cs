@@ -1,17 +1,31 @@
 using OrderService.Application.Abstractions.CQRS;
+using OrderService.Application.Abstractions.Integrations;
 using OrderService.Application.Abstractions.Persistence;
 using OrderService.Contracts.Dtos;
 using OrderService.Domain.Entities;
 
 namespace OrderService.Application.Features.Orders.Commands.PlaceOrder;
 
-public sealed class PlaceOrderCommandHandler(IOrderRepository orderRepository) : ICommandHandler<PlaceOrderCommand, OrderDto>
+public sealed class PlaceOrderCommandHandler(
+    IOrderRepository orderRepository,
+    IProductCatalogGateway productCatalogGateway) : ICommandHandler<PlaceOrderCommand, OrderDto>
 {
     public async Task<OrderDto> Handle(PlaceOrderCommand command, CancellationToken cancellationToken)
     {
         ValidateRequest(command.UserId, command.Request);
 
-        var normalizedUnitPrice = decimal.Round(command.Request.UnitPrice, 2, MidpointRounding.AwayFromZero);
+        var product = await productCatalogGateway.GetProductByIdAsync(command.Request.ProductId, cancellationToken);
+        if (product is null)
+        {
+            throw new ArgumentException("Product does not exist.");
+        }
+
+        if (product.ShopId != command.Request.ShopId)
+        {
+            throw new ArgumentException("Product does not belong to requested shop.");
+        }
+
+        var normalizedUnitPrice = decimal.Round(product.UnitPrice, 2, MidpointRounding.AwayFromZero);
         var totalPrice = decimal.Round(normalizedUnitPrice * command.Request.Quantity, 2, MidpointRounding.AwayFromZero);
 
         var order = new OrderEntity
@@ -55,10 +69,6 @@ public sealed class PlaceOrderCommandHandler(IOrderRepository orderRepository) :
             throw new ArgumentException("Quantity must be greater than zero.");
         }
 
-        if (request.UnitPrice < 0)
-        {
-            throw new ArgumentException("UnitPrice cannot be negative.");
-        }
     }
 
     private static OrderDto ToDto(OrderEntity order)

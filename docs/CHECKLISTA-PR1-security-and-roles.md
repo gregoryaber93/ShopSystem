@@ -4,11 +4,11 @@
 Remove unauthorized role escalation and close manager creation flow to admin only.
 
 ## Implementation Tasks
-- [ ] `AuthenticationService`: limit public register to `User` role.
-- [ ] `AuthenticationService`: remove/ignore `Roles` in public register DTO.
-- [ ] `UserService`: limit `AllowedRoles` to `Manager`, `User`.
-- [ ] `UserService`: return clear error when trying to create `Admin`.
-- [ ] `UserService`: keep `[Authorize(Roles = "Admin")]` for create user.
+- [x] `AuthenticationService`: limit public register to `User` role.
+- [x] `AuthenticationService`: remove/ignore `Roles` in public register DTO.
+- [x] `UserService`: limit `AllowedRoles` to `Manager`, `User`.
+- [x] `UserService`: return clear error when trying to create `Admin`.
+- [x] `UserService`: keep `[Authorize(Roles = "Admin")]` for create user.
 
 ## Tests
 - [ ] Register with `Admin` returns 400/403.

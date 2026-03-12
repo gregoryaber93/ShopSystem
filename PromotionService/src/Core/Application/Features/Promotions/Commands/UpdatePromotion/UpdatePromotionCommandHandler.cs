@@ -1,5 +1,6 @@
 using PromotionService.Application.Abstractions.CQRS;
 using PromotionService.Application.Abstractions.Persistence;
+using PromotionService.Application.Features.Promotions;
 using PromotionService.Contracts.Dtos;
 using PromotionService.Domain.Entities;
 
@@ -15,14 +16,14 @@ public sealed class UpdatePromotionCommandHandler(IPromotionRepository promotion
             return null;
         }
 
-        ValidatePromotion(command.Promotion);
+        var normalized = PromotionValidation.NormalizeAndValidate(command.Promotion);
 
-        promotion.Type = MapType(command.Promotion.Type);
-        promotion.DiscountPercentage = command.Promotion.DiscountPercentage;
-        promotion.ProductIds = command.Promotion.ProductIds.ToArray();
-        promotion.StartsAtUtc = command.Promotion.StartsAtUtc;
-        promotion.EndsAtUtc = command.Promotion.EndsAtUtc;
-        promotion.RequiredPoints = command.Promotion.RequiredPoints;
+        promotion.Type = normalized.Type;
+        promotion.DiscountPercentage = normalized.DiscountPercentage;
+        promotion.ProductIds = normalized.ProductIds;
+        promotion.StartsAtUtc = normalized.StartsAtUtc;
+        promotion.EndsAtUtc = normalized.EndsAtUtc;
+        promotion.RequiredPoints = normalized.RequiredPoints;
 
         await promotionRepository.SaveChangesAsync(cancellationToken);
 
@@ -34,42 +35,6 @@ public sealed class UpdatePromotionCommandHandler(IPromotionRepository promotion
             promotion.StartsAtUtc,
             promotion.EndsAtUtc,
             promotion.RequiredPoints);
-    }
-
-    private static void ValidatePromotion(PromotionDto promotion)
-    {
-        if (promotion.DiscountPercentage <= 0 || promotion.DiscountPercentage > 100)
-        {
-            throw new ArgumentException("DiscountPercentage must be between 0 and 100.");
-        }
-
-        if (promotion.EndsAtUtc is not null && promotion.StartsAtUtc is not null && promotion.EndsAtUtc < promotion.StartsAtUtc)
-        {
-            throw new ArgumentException("EndsAtUtc cannot be earlier than StartsAtUtc.");
-        }
-
-        if (promotion.Type == PromotionTypeDto.ProductDiscount && promotion.ProductIds.Count == 0)
-        {
-            throw new ArgumentException("ProductDiscount promotion requires at least one ProductId.");
-        }
-
-        if (promotion.Type == PromotionTypeDto.LoyaltyPoints)
-        {
-            if (promotion.RequiredPoints is null || promotion.RequiredPoints <= 0)
-            {
-                throw new ArgumentException("LoyaltyPoints promotion requires RequiredPoints greater than 0.");
-            }
-        }
-    }
-
-    private static PromotionType MapType(PromotionTypeDto type)
-    {
-        return type switch
-        {
-            PromotionTypeDto.ProductDiscount => PromotionType.ProductDiscount,
-            PromotionTypeDto.LoyaltyPoints => PromotionType.LoyaltyPoints,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown promotion type.")
-        };
     }
 
     private static PromotionTypeDto MapType(PromotionType type)

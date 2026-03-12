@@ -13,8 +13,6 @@ public sealed class RegisterCommandHandler(
 {
     private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Admin",
-        "Manager",
         "User"
     };
 
@@ -26,7 +24,7 @@ public sealed class RegisterCommandHandler(
             return null;
         }
 
-        var roles = command.Request.Roles
+        var roles = (command.Request.Roles ?? [])
             .Where(role => !string.IsNullOrWhiteSpace(role))
             .Select(role => role.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)

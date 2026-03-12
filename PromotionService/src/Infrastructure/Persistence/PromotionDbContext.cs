@@ -6,6 +6,7 @@ namespace PromotionService.Infrastructure.Persistence;
 public class PromotionDbContext(DbContextOptions<PromotionDbContext> options) : DbContext(options)
 {
     public DbSet<PromotionEntity> Promotions => Set<PromotionEntity>();
+    public DbSet<UserPromotionProfileEntity> UserPromotionProfiles => Set<UserPromotionProfileEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +40,32 @@ public class PromotionDbContext(DbContextOptions<PromotionDbContext> options) : 
 
             entity.Property(promotion => promotion.RequiredPoints)
                 .HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<UserPromotionProfileEntity>(entity =>
+        {
+            entity.ToTable("user_promotion_profiles", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint("CK_user_promotion_profiles_points_nonnegative", "\"LoyaltyPoints\" >= 0");
+                tableBuilder.HasCheckConstraint("CK_user_promotion_profiles_orders_nonnegative", "\"OrdersCount\" >= 0");
+                tableBuilder.HasCheckConstraint("CK_user_promotion_profiles_total_spent_nonnegative", "\"TotalSpent\" >= 0");
+            });
+
+            entity.HasKey(profile => profile.UserId);
+
+            entity.Property(profile => profile.LoyaltyPoints)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.Property(profile => profile.OrdersCount)
+                .IsRequired();
+
+            entity.Property(profile => profile.TotalSpent)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.Property(profile => profile.LastOrderAtUtc)
+                .HasColumnType("timestamp with time zone");
         });
     }
 }

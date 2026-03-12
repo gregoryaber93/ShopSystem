@@ -4,4 +4,4 @@ public sealed record PlaceOrderRequestDto(
     Guid ShopId,
     Guid ProductId,
     int Quantity,
-    decimal UnitPrice);
+    decimal? UnitPrice = null);
