@@ -17,22 +17,19 @@ public class AuthenticationController(
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto request, CancellationToken cancellationToken)
     {
-        AuthResponseDto? result;
         try
         {
-            result = await registerCommandHandler.Handle(new RegisterCommand(request), cancellationToken);
-        }
-        catch (ArgumentException exception)
-        {
-            return BadRequest(exception.Message);
-        }
-
-        if (result is null)
-        {
+            var result = await registerCommandHandler.Handle(new RegisterCommand(request), cancellationToken);
+            if (result is null)
+            {
             return Conflict("Uzytkownik o podanym emailu juz istnieje.");
+            }
+            return Ok(result);
         }
-
-        return Ok(result);
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("login")]

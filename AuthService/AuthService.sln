@@ -7,15 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{81034408-37C8-1011-444E-4C15C2FADA8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationService.Api", "src\API\AuthenticationService.Api.csproj", "{48B2E3F9-967B-4451-968A-634A9FA19CAD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Api", "src\API\AuthService.Api.csproj", "{48B2E3F9-967B-4451-968A-634A9FA19CAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationService.Application", "src\Core\Application\AuthenticationService.Application.csproj", "{6493D558-ED9D-4905-9BE8-48B59E772E6E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Application", "src\Core\Application\AuthService.Application.csproj", "{6493D558-ED9D-4905-9BE8-48B59E772E6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationService.Contracts", "src\Core\Contracts\AuthenticationService.Contracts.csproj", "{ABFC216C-102B-4249-B58E-DA6E5860AF30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Contracts", "src\Core\Contracts\AuthService.Contracts.csproj", "{ABFC216C-102B-4249-B58E-DA6E5860AF30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationService.Domain", "src\Core\Domain\AuthenticationService.Domain.csproj", "{966B20A2-4F09-4FDB-A0E1-FBCBE7B5E44D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Domain", "src\Core\Domain\AuthService.Domain.csproj", "{966B20A2-4F09-4FDB-A0E1-FBCBE7B5E44D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationService.Infrastructure", "src\Infrastructure\AuthenticationService.Infrastructure.csproj", "{63DD9441-1A2E-437B-988B-BD8BA9D4000F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Infrastructure", "src\Infrastructure\AuthService.Infrastructure.csproj", "{63DD9441-1A2E-437B-988B-BD8BA9D4000F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

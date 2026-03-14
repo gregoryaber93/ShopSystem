@@ -49,7 +49,6 @@ public class Program
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
             dbContext.Database.EnsureCreated();
-            AuthDbSeeder.SeedDefaults(dbContext);
         }
 
         if (app.Environment.IsDevelopment())

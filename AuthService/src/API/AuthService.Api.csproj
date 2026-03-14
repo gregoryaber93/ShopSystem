@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Application\AuthenticationService.Application.csproj" />
-    <ProjectReference Include="..\Infrastructure\AuthenticationService.Infrastructure.csproj" />
-    <ProjectReference Include="..\Core\Contracts\AuthenticationService.Contracts.csproj" />
+    <ProjectReference Include="..\Core\Application\AuthService.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\Core\Contracts\AuthService.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
