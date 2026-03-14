@@ -1,8 +1,8 @@
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Domain.Entities;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthenticationService.Infrastructure.Persistence;
+namespace AuthService.Infrastructure.Persistence;
 
 public sealed class AuthUserRepository(AuthDbContext dbContext) : IAuthUserRepository
 {

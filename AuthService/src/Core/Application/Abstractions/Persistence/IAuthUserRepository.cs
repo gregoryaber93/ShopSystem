@@ -1,6 +1,6 @@
-using AuthenticationService.Domain.Entities;
+using AuthService.Domain.Entities;
 
-namespace AuthenticationService.Application.Abstractions.Persistence;
+namespace AuthService.Application.Abstractions.Persistence;
 
 public interface IAuthUserRepository
 {

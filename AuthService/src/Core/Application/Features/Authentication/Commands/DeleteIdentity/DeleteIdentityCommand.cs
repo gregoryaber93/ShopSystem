@@ -1,5 +1,5 @@
-using AuthenticationService.Application.Abstractions.CQRS;
+using AuthService.Application.Abstractions.CQRS;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
+namespace AuthService.Application.Features.Authentication.Commands.DeleteIdentity;
 
 public sealed record DeleteIdentityCommand(Guid UserId) : ICommand<bool>;

@@ -1,4 +1,4 @@
-namespace AuthenticationService.Domain.Entities;
+namespace AuthService.Domain.Entities;
 
 public sealed class AuthOutboxMessageEntity
 {

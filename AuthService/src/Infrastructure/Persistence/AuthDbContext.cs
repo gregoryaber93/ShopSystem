@@ -1,7 +1,7 @@
-using AuthenticationService.Domain.Entities;
+using AuthService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthenticationService.Infrastructure.Persistence;
+namespace AuthService.Infrastructure.Persistence;
 
 public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
 {

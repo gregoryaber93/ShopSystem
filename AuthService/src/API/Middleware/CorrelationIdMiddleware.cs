@@ -1,4 +1,4 @@
-namespace AuthenticationService.Api.Middleware;
+namespace AuthService.Api.Middleware;
 
 public sealed class CorrelationIdMiddleware(RequestDelegate next)
 {

@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 public sealed class AuthOutboxOptions
 {

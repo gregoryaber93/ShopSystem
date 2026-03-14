@@ -1,6 +1,6 @@
-using AuthenticationService.Infrastructure.Observability;
+using AuthService.Infrastructure.Observability;
 
-namespace AuthenticationService.Api.Middleware;
+namespace AuthService.Api.Middleware;
 
 public sealed class ExceptionLoggingMiddleware(
     RequestDelegate next,
@@ -19,7 +19,7 @@ public sealed class ExceptionLoggingMiddleware(
                 correlationId, context.Request.Path);
 
             _ = loggerServiceClient.SendAsync(
-                "AuthenticationService",
+                "AuthService",
                 ex.ToString(),
                 correlationId,
                 CancellationToken.None);

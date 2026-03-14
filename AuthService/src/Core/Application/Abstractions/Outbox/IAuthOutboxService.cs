@@ -1,4 +1,4 @@
-namespace AuthenticationService.Application.Abstractions.Outbox;
+namespace AuthService.Application.Abstractions.Outbox;
 
 public interface IAuthOutboxService
 {

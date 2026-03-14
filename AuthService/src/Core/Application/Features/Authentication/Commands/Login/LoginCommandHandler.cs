@@ -1,9 +1,9 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Contracts.Dtos;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.Login;
+namespace AuthService.Application.Features.Authentication.Commands.Login;
 
 public sealed class LoginCommandHandler(
     IAuthUserRepository authUserRepository,

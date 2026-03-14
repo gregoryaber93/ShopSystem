@@ -1,6 +1,6 @@
-using AuthenticationService.Domain.Entities;
+using AuthService.Domain.Entities;
 
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 public interface IAuthOutboxBrokerPublisher
 {

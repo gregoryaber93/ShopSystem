@@ -1,10 +1,10 @@
 using System.Text.Json;
-using AuthenticationService.Application.Abstractions.Outbox;
-using AuthenticationService.Domain.Entities;
-using AuthenticationService.Infrastructure.Persistence;
+using AuthService.Application.Abstractions.Outbox;
+using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 internal sealed class AuthOutboxService(AuthDbContext dbContext) : IAuthOutboxService
 {

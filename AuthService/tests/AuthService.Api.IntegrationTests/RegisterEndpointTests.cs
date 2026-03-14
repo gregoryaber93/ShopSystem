@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
-using AuthenticationService.Api;
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Features.Authentication.Commands.Login;
-using AuthenticationService.Application.Features.Authentication.Commands.Register;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Api;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Features.Authentication.Commands.Login;
+using AuthService.Application.Features.Authentication.Commands.Register;
+using AuthService.Contracts.Dtos;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +55,7 @@ public sealed class RegisterEndpointTests
     [Fact]
     public async Task Register_WhenHandlerThrowsProfileProvisioningException_Returns503()
     {
-        await using var app = new TestAppFactory(_ => throw new AuthenticationService.Application.Common.ProfileProvisioningException("temporary downstream issue", false));
+        await using var app = new TestAppFactory(_ => throw new AuthService.Application.Common.ProfileProvisioningException("temporary downstream issue", false));
 
         var client = app.CreateClient();
 

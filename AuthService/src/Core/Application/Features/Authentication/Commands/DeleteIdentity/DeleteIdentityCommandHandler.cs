@@ -1,7 +1,7 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Abstractions.Persistence;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
+namespace AuthService.Application.Features.Authentication.Commands.DeleteIdentity;
 
 public sealed class DeleteIdentityCommandHandler(
     IAuthUserRepository authUserRepository) : ICommandHandler<DeleteIdentityCommand, bool>

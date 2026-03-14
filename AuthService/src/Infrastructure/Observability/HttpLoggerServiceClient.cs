@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 
-namespace AuthenticationService.Infrastructure.Observability;
+namespace AuthService.Infrastructure.Observability;
 
 public sealed class HttpLoggerServiceClient(
     HttpClient httpClient,

@@ -1,19 +1,19 @@
-using AuthenticationService.Application.Abstractions.Outbox;
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Application.Abstractions.Profiles;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Infrastructure.Messaging;
-using AuthenticationService.Infrastructure.Observability;
-using AuthenticationService.Infrastructure.Outbox;
-using AuthenticationService.Infrastructure.Persistence;
-using AuthenticationService.Infrastructure.Profiles;
-using AuthenticationService.Infrastructure.Security;
+using AuthService.Application.Abstractions.Outbox;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.Profiles;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Infrastructure.Messaging;
+using AuthService.Infrastructure.Observability;
+using AuthService.Infrastructure.Outbox;
+using AuthService.Infrastructure.Persistence;
+using AuthService.Infrastructure.Profiles;
+using AuthService.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShopSystem.Contracts.Grpc.UserProfiles;
 
-namespace AuthenticationService.Infrastructure;
+namespace AuthService.Infrastructure;
 
 public static class DependencyInjection
 {

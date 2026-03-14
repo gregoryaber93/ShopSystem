@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using AuthenticationService.Application.Abstractions.Security;
+using AuthService.Application.Abstractions.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthenticationService.Infrastructure.Security;
+namespace AuthService.Infrastructure.Security;
 
 internal sealed class RsaJwtTokenService(IOptions<JwtRsaOptions> options) : IJwtTokenService
 {

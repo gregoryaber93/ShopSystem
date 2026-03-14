@@ -1,11 +1,11 @@
-using AuthenticationService.Application.Abstractions.Outbox;
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Application.Abstractions.Profiles;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Application.Common;
-using AuthenticationService.Application.Features.Authentication.Commands.Register;
-using AuthenticationService.Contracts.Dtos;
-using AuthenticationService.Domain.Entities;
+using AuthService.Application.Abstractions.Outbox;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.Profiles;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Application.Common;
+using AuthService.Application.Features.Authentication.Commands.Register;
+using AuthService.Contracts.Dtos;
+using AuthService.Domain.Entities;
 using Xunit;
 
 namespace AuthService.Application.Tests;

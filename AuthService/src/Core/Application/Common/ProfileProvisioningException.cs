@@ -1,4 +1,4 @@
-namespace AuthenticationService.Application.Common;
+namespace AuthService.Application.Common;
 
 public sealed class ProfileProvisioningException : Exception
 {

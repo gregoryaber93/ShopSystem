@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 internal static class AuthOutboxStatus
 {

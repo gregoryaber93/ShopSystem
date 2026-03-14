@@ -1,13 +1,13 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Abstractions.Outbox;
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Application.Abstractions.Profiles;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Application.Common;
-using AuthenticationService.Contracts.Dtos;
-using AuthenticationService.Domain.Entities;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Abstractions.Outbox;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.Profiles;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Application.Common;
+using AuthService.Contracts.Dtos;
+using AuthService.Domain.Entities;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.Register;
+namespace AuthService.Application.Features.Authentication.Commands.Register;
 
 public sealed class RegisterCommandHandler(
     IAuthOutboxService authOutboxService,

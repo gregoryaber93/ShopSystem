@@ -1,4 +1,4 @@
-namespace AuthenticationService.Application.Abstractions.Profiles;
+namespace AuthService.Application.Abstractions.Profiles;
 
 public interface IUserProfileProvisioningClient
 {

@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Messaging;
+namespace AuthService.Infrastructure.Messaging;
 
 public sealed class MessageBrokersOptions
 {

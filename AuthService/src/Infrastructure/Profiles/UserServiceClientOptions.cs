@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Profiles;
+namespace AuthService.Infrastructure.Profiles;
 
 public sealed class UserServiceClientOptions
 {

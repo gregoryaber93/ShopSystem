@@ -1,10 +1,10 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Abstractions.Persistence;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Contracts.Dtos;
-using AuthenticationService.Domain.Entities;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Abstractions.Persistence;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Contracts.Dtos;
+using AuthService.Domain.Entities;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.ProvisionIdentity;
+namespace AuthService.Application.Features.Authentication.Commands.ProvisionIdentity;
 
 public sealed class ProvisionIdentityCommandHandler(
     IAuthUserRepository authUserRepository,

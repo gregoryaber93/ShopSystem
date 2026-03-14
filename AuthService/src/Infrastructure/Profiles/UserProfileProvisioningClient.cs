@@ -1,8 +1,8 @@
-using AuthenticationService.Application.Abstractions.Profiles;
+using AuthService.Application.Abstractions.Profiles;
 using Microsoft.Extensions.Options;
 using ShopSystem.Contracts.Grpc.UserProfiles;
 
-namespace AuthenticationService.Infrastructure.Profiles;
+namespace AuthService.Infrastructure.Profiles;
 
 internal sealed class UserProfileProvisioningClient(
     UserProfilesGrpc.UserProfilesGrpcClient grpcClient,

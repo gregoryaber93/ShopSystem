@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Security;
+namespace AuthService.Infrastructure.Security;
 
 public sealed class AdminSeedOptions
 {

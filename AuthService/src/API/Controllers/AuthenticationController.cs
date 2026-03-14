@@ -1,12 +1,12 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Common;
-using AuthenticationService.Application.Features.Authentication.Commands.Login;
-using AuthenticationService.Application.Features.Authentication.Commands.Register;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Common;
+using AuthService.Application.Features.Authentication.Commands.Login;
+using AuthService.Application.Features.Authentication.Commands.Register;
+using AuthService.Contracts.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuthenticationService.Api.Controllers;
+namespace AuthService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

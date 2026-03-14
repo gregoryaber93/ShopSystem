@@ -1,6 +1,6 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Contracts.Dtos;
 
-namespace AuthenticationService.Application.Features.Authentication.Commands.Login;
+namespace AuthService.Application.Features.Authentication.Commands.Login;
 
 public sealed record LoginCommand(LoginRequestDto Request) : ICommand<AuthResponseDto?>;

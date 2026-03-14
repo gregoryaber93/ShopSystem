@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
-using AuthenticationService.Application.Abstractions.Security;
+using AuthService.Application.Abstractions.Security;
 
-namespace AuthenticationService.Infrastructure.Security;
+namespace AuthService.Infrastructure.Security;
 
 internal sealed class Pbkdf2PasswordHasherService : IPasswordHasherService
 {

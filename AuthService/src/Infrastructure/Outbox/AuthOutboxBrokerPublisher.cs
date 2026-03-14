@@ -1,10 +1,10 @@
 using System.Text;
-using AuthenticationService.Domain.Entities;
-using AuthenticationService.Infrastructure.Messaging;
+using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Messaging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 public sealed class AuthOutboxBrokerPublisher(IOptions<MessageBrokersOptions> options) : IAuthOutboxBrokerPublisher
 {

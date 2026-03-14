@@ -1,13 +1,13 @@
 using System.Text.Json;
-using AuthenticationService.Application.Abstractions.Outbox;
-using AuthenticationService.Application.Abstractions.Security;
-using AuthenticationService.Domain.Entities;
-using AuthenticationService.Infrastructure.Outbox;
-using AuthenticationService.Infrastructure.Security;
+using AuthService.Application.Abstractions.Outbox;
+using AuthService.Application.Abstractions.Security;
+using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Outbox;
+using AuthService.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace AuthenticationService.Infrastructure.Persistence;
+namespace AuthService.Infrastructure.Persistence;
 
 public static class AuthDbSeeder
 {

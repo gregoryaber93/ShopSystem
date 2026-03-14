@@ -1,11 +1,11 @@
-using AuthenticationService.Infrastructure.Persistence;
+using AuthService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace AuthenticationService.Infrastructure.Outbox;
+namespace AuthService.Infrastructure.Outbox;
 
 internal sealed class AuthOutboxWorker(
     IServiceScopeFactory scopeFactory,

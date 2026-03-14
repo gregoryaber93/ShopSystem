@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
-using AuthenticationService.Application;
-using AuthenticationService.Api.Middleware;
-using AuthenticationService.Infrastructure;
-using AuthenticationService.Infrastructure.Persistence;
-using AuthenticationService.Infrastructure.Security;
+using AuthService.Application;
+using AuthService.Api.Middleware;
+using AuthService.Infrastructure;
+using AuthService.Infrastructure.Persistence;
+using AuthService.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +12,7 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace AuthenticationService.Api;
+namespace AuthService.Api;
 
 public class Program
 {
@@ -106,7 +106,7 @@ public class Program
             var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
 
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<AuthenticationService.Application.Abstractions.Security.IPasswordHasherService>();
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<AuthService.Application.Abstractions.Security.IPasswordHasherService>();
             var adminSeedOptions = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AdminSeedOptions>>();
             await AuthDbSeeder.SeedDefaultsAsync(dbContext, passwordHasher, adminSeedOptions, CancellationToken.None);
         }

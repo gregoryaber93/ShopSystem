@@ -1,3 +1,3 @@
-namespace AuthenticationService.Application.Abstractions.CQRS;
+namespace AuthService.Application.Abstractions.CQRS;
 
 public interface ICommand<out TResponse>;

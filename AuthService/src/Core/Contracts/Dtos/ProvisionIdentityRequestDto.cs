@@ -1,3 +1,3 @@
-namespace AuthenticationService.Contracts.Dtos;
+namespace AuthService.Contracts.Dtos;
 
 public sealed record ProvisionIdentityRequestDto(string Email, string Password, IReadOnlyCollection<string> Roles);

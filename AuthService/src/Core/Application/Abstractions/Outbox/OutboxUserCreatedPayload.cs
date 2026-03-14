@@ -1,3 +1,3 @@
-namespace AuthenticationService.Application.Abstractions.Outbox;
+namespace AuthService.Application.Abstractions.Outbox;
 
 public sealed record OutboxUserCreatedPayload(Guid UserId, string Email, IReadOnlyCollection<string> Roles);

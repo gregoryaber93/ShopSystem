@@ -1,11 +1,11 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
-using AuthenticationService.Application.Features.Authentication.Commands.ProvisionIdentity;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Features.Authentication.Commands.DeleteIdentity;
+using AuthService.Application.Features.Authentication.Commands.ProvisionIdentity;
+using AuthService.Contracts.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuthenticationService.Api.Controllers;
+namespace AuthService.Api.Controllers;
 
 [ApiController]
 [Route("api/authentication/internal")]

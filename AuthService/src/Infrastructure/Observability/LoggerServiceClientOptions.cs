@@ -1,4 +1,4 @@
-namespace AuthenticationService.Infrastructure.Observability;
+namespace AuthService.Infrastructure.Observability;
 
 public sealed class LoggerServiceClientOptions
 {

@@ -1,12 +1,12 @@
-using AuthenticationService.Application.Abstractions.CQRS;
-using AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
-using AuthenticationService.Application.Features.Authentication.Commands.Login;
-using AuthenticationService.Application.Features.Authentication.Commands.ProvisionIdentity;
-using AuthenticationService.Application.Features.Authentication.Commands.Register;
-using AuthenticationService.Contracts.Dtos;
+using AuthService.Application.Abstractions.CQRS;
+using AuthService.Application.Features.Authentication.Commands.DeleteIdentity;
+using AuthService.Application.Features.Authentication.Commands.Login;
+using AuthService.Application.Features.Authentication.Commands.ProvisionIdentity;
+using AuthService.Application.Features.Authentication.Commands.Register;
+using AuthService.Contracts.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AuthenticationService.Application;
+namespace AuthService.Application;
 
 public static class DependencyInjection
 {
