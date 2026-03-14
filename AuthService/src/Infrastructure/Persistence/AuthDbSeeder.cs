@@ -11,8 +11,6 @@ namespace AuthenticationService.Infrastructure.Persistence;
 
 public static class AuthDbSeeder
 {
-    private const string UserCreatedEventType = "UserCreated";
-
     public static async Task SeedDefaultsAsync(
         AuthDbContext dbContext,
         IPasswordHasherService passwordHasherService,
@@ -82,7 +80,7 @@ public static class AuthDbSeeder
         var userIdMarker = $"\"UserId\":\"{admin.Id}\"";
         var alreadyQueued = await dbContext.OutboxMessages
             .AnyAsync(
-                message => message.EventType == UserCreatedEventType
+                message => message.EventType == AuthOutboxConstants.UserCreatedEventType
                     && message.PayloadJson.Contains(userIdMarker)
                     && (message.Status == AuthOutboxStatus.Pending
                         || message.Status == AuthOutboxStatus.FailedRetryable
@@ -108,7 +106,7 @@ public static class AuthDbSeeder
         var message = new AuthOutboxMessageEntity
         {
             Id = Guid.NewGuid(),
-            EventType = UserCreatedEventType,
+            EventType = AuthOutboxConstants.UserCreatedEventType,
             PayloadJson = JsonSerializer.Serialize(payload),
             Status = AuthOutboxStatus.Pending,
             RetryCount = 0,

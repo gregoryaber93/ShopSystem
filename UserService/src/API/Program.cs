@@ -118,8 +118,8 @@ public class Program
             app.UseHttpsRedirection();
         }
 
-            app.UseMiddleware<CorrelationIdMiddleware>();
-            app.UseMiddleware<ExceptionLoggingMiddleware>();
+        app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<ExceptionLoggingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

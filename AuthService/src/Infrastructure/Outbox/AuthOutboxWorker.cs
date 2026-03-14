@@ -43,7 +43,7 @@ internal sealed class AuthOutboxWorker(
 
         var now = DateTime.UtcNow;
         var batch = await dbContext.OutboxMessages
-            .Where(message => message.EventType == "UserCreated")
+            .Where(message => message.EventType == AuthOutboxConstants.UserCreatedEventType)
             .Where(message => message.Status == AuthOutboxStatus.Pending || message.Status == AuthOutboxStatus.FailedRetryable)
             .Where(message => message.NextAttemptAtUtc <= now)
             .OrderBy(message => message.CreatedAtUtc)

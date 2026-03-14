@@ -4,16 +4,17 @@ using UserService.Application.Abstractions.CQRS;
 using UserService.Application.Features.Users.Commands.CreateOrUpdateUserProfile;
 using UserService.Contracts.Dtos;
 using UserService.Infrastructure.Security;
+using Microsoft.Extensions.Options;
 
 namespace UserService.Api.Grpc;
 
 public sealed class UserProfilesGrpcService(
     ICommandHandler<CreateOrUpdateUserProfileCommand, UserDto?> createOrUpdateUserProfileCommandHandler,
-    IConfiguration configuration) : UserProfilesGrpc.UserProfilesGrpcBase
+    IOptions<InternalApiOptions> internalApiOptions) : UserProfilesGrpc.UserProfilesGrpcBase
 {
     public override async Task<CreateOrUpdateProfileResponse> CreateOrUpdateProfile(CreateOrUpdateProfileRequest request, ServerCallContext context)
     {
-        var configuredKey = configuration[$"{InternalApiOptions.SectionName}:ApiKey"];
+        var configuredKey = internalApiOptions.Value.ApiKey;
         if (string.IsNullOrWhiteSpace(configuredKey) || !string.Equals(configuredKey, request.InternalApiKey, StringComparison.Ordinal))
         {
             throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid internal API key."));

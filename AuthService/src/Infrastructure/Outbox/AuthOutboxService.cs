@@ -8,15 +8,13 @@ namespace AuthenticationService.Infrastructure.Outbox;
 
 internal sealed class AuthOutboxService(AuthDbContext dbContext) : IAuthOutboxService
 {
-    private const string UserCreatedEventType = "UserCreated";
-
     public async Task<Guid> EnqueueUserCreatedAsync(Guid userId, string email, IReadOnlyCollection<string> roles, CancellationToken cancellationToken)
     {
         var payload = new OutboxUserCreatedPayload(userId, email, roles);
         var message = new AuthOutboxMessageEntity
         {
             Id = Guid.NewGuid(),
-            EventType = UserCreatedEventType,
+            EventType = AuthOutboxConstants.UserCreatedEventType,
             PayloadJson = JsonSerializer.Serialize(payload),
             Status = AuthOutboxStatus.Pending,
             RetryCount = 0,
