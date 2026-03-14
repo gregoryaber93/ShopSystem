@@ -6,6 +6,14 @@ namespace AuthenticationService.Infrastructure.Persistence;
 
 public sealed class AuthUserRepository(AuthDbContext dbContext) : IAuthUserRepository
 {
+    public Task<AuthUserEntity?> GetByIdAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return dbContext.Users
+            .Include(user => user.UserRoles)
+            .ThenInclude(userRole => userRole.Role)
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+    }
+
     public Task<AuthUserEntity?> GetByEmailWithRolesAsync(string email, CancellationToken cancellationToken)
     {
         return dbContext.Users
@@ -56,6 +64,11 @@ public sealed class AuthUserRepository(AuthDbContext dbContext) : IAuthUserRepos
     public Task AddUserAsync(AuthUserEntity user, CancellationToken cancellationToken)
     {
         return dbContext.Users.AddAsync(user, cancellationToken).AsTask();
+    }
+
+    public void RemoveUser(AuthUserEntity user)
+    {
+        dbContext.Users.Remove(user);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)

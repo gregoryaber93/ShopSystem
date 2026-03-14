@@ -1,4 +1,5 @@
 using UserService.Application.Abstractions.CQRS;
+using UserService.Application.Abstractions.Identity;
 using UserService.Application.Abstractions.Persistence;
 using UserService.Application.Abstractions.Security;
 using UserService.Contracts.Dtos;
@@ -8,7 +9,7 @@ namespace UserService.Application.Features.Users.Commands.CreateUser;
 
 public sealed class CreateUserCommandHandler(
     IUserRepository userRepository,
-    IPasswordHasherService passwordHasherService,
+    IAuthIdentityProvisioningClient authIdentityProvisioningClient,
     ICurrentUserService currentUserService) : ICommandHandler<CreateUserCommand, UserDto?>
 {
     private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
@@ -52,13 +53,23 @@ public sealed class CreateUserCommandHandler(
             throw new ArgumentException($"Nieobslugiwane role: {string.Join(", ", invalidRoles)}");
         }
 
+        var provisionedIdentity = await authIdentityProvisioningClient.ProvisionUserAsync(
+            email,
+            command.Request.Password,
+            roles,
+            cancellationToken);
+
+        if (provisionedIdentity is null)
+        {
+            return null;
+        }
+
         var roleEntities = await userRepository.GetOrCreateRolesAsync(roles, cancellationToken);
 
         var user = new UserEntity
         {
-            Id = Guid.NewGuid(),
-            Email = email,
-            PasswordHash = passwordHasherService.HashPassword(command.Request.Password)
+            Id = provisionedIdentity.Id,
+            Email = provisionedIdentity.Email
         };
 
         foreach (var role in roleEntities)
@@ -72,10 +83,29 @@ public sealed class CreateUserCommandHandler(
             });
         }
 
-        await userRepository.AddUserAsync(user, cancellationToken);
-        await userRepository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await userRepository.AddUserAsync(user, cancellationToken);
+            await userRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await TryRollbackProvisionedIdentityAsync(provisionedIdentity.Id);
+            throw;
+        }
 
         var assignedRoles = user.UserRoles.Select(userRole => userRole.Role.Name).ToArray();
         return new UserDto(user.Id, user.Email, assignedRoles);
+    }
+
+    private async Task TryRollbackProvisionedIdentityAsync(Guid userId)
+    {
+        try
+        {
+            await authIdentityProvisioningClient.RollbackProvisionAsync(userId, CancellationToken.None);
+        }
+        catch
+        {
+        }
     }
 }

@@ -6,6 +6,22 @@ namespace UserService.Infrastructure.Persistence;
 
 public sealed class UserRepository(UserDbContext dbContext) : IUserRepository
 {
+    public Task<UserEntity?> GetByIdWithRolesAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return dbContext.Users
+            .Include(user => user.UserRoles)
+            .ThenInclude(userRole => userRole.Role)
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+    }
+
+    public Task<UserEntity?> GetByEmailWithRolesAsync(string email, CancellationToken cancellationToken)
+    {
+        return dbContext.Users
+            .Include(user => user.UserRoles)
+            .ThenInclude(userRole => userRole.Role)
+            .FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
+    }
+
     public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
     {
         return dbContext.Users.AnyAsync(user => user.Email == email, cancellationToken);
@@ -50,6 +66,12 @@ public sealed class UserRepository(UserDbContext dbContext) : IUserRepository
     public Task AddUserAsync(UserEntity user, CancellationToken cancellationToken)
     {
         return dbContext.Users.AddAsync(user, cancellationToken).AsTask();
+    }
+
+    public void RemoveUserRole(UserRoleEntity userRole)
+    {
+        userRole.User.UserRoles.Remove(userRole);
+        dbContext.UserRoles.Remove(userRole);
     }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken)

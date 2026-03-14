@@ -1,7 +1,13 @@
+using System.Security.Claims;
+using System.Security.Cryptography;
 using AuthenticationService.Application;
 using AuthenticationService.Api.Middleware;
 using AuthenticationService.Infrastructure;
 using AuthenticationService.Infrastructure.Persistence;
+using AuthenticationService.Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -10,8 +16,10 @@ namespace AuthenticationService.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
+        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddApplication();
@@ -29,6 +37,21 @@ public class Program
                 In = ParameterLocation.Header,
                 Description = "Wpisz token JWT w formacie: Bearer {token}"
             });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    []
+                }
+            });
         });
 
         builder.Services.AddOpenTelemetry()
@@ -41,14 +64,51 @@ public class Program
                 .AddHttpClientInstrumentation()
                 .AddConsoleExporter());
 
-        builder.Services.AddAuthorization();
+        var jwtRsaOptions = builder.Configuration.GetSection(JwtRsaOptions.SectionName).Get<JwtRsaOptions>()
+            ?? throw new InvalidOperationException("JwtRsa section is missing in configuration.");
+
+        if (string.IsNullOrWhiteSpace(jwtRsaOptions.PublicKeyXml))
+        {
+            throw new InvalidOperationException("JwtRsa:PublicKeyXml is required for JWT RSA validation.");
+        }
+
+        using var validationRsa = RSA.Create();
+        validationRsa.FromXmlString(jwtRsaOptions.PublicKeyXml);
+        var validationKey = new RsaSecurityKey(validationRsa.ExportParameters(false));
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtRsaOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtRsaOptions.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = validationKey,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromSeconds(30),
+                    RoleClaimType = ClaimTypes.Role
+                };
+            });
+
+        builder.Services.AddAuthorizationBuilder()
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build());
 
         var app = builder.Build();
 
-        using (var scope = app.Services.CreateScope())
+        if (!app.Environment.IsEnvironment("Testing"))
         {
+            using var scope = app.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-            dbContext.Database.EnsureCreated();
+            await dbContext.Database.EnsureCreatedAsync();
+
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<AuthenticationService.Application.Abstractions.Security.IPasswordHasherService>();
+            var adminSeedOptions = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AdminSeedOptions>>();
+            await AuthDbSeeder.SeedDefaultsAsync(dbContext, passwordHasher, adminSeedOptions, CancellationToken.None);
         }
 
         if (app.Environment.IsDevelopment())
@@ -64,9 +124,10 @@ public class Program
 
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<ExceptionLoggingMiddleware>();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
     }
 }

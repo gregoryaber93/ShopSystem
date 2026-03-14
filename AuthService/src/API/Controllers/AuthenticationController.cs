@@ -1,4 +1,5 @@
 using AuthenticationService.Application.Abstractions.CQRS;
+using AuthenticationService.Application.Common;
 using AuthenticationService.Application.Features.Authentication.Commands.Login;
 using AuthenticationService.Application.Features.Authentication.Commands.Register;
 using AuthenticationService.Contracts.Dtos;
@@ -22,13 +23,22 @@ public class AuthenticationController(
             var result = await registerCommandHandler.Handle(new RegisterCommand(request), cancellationToken);
             if (result is null)
             {
-            return Conflict("Uzytkownik o podanym emailu juz istnieje.");
+                return Conflict("Uzytkownik o podanym emailu juz istnieje.");
             }
+
             return Ok(result);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (ProfileProvisioningException exception) when (exception.IsConflict)
+        {
+            return Conflict(exception.Message);
+        }
+        catch (ProfileProvisioningException exception)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, exception.Message);
         }
     }
 

@@ -103,6 +103,26 @@
         "/^dotnet build \\.\\.\\\\LoggerService\\\\LoggerService\\.sln$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\AuthService\"; dotnet build AuthService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet test \\.\\\\tests\\\\AuthService\\.Application\\.Tests\\\\AuthService\\.Application\\.Tests\\.csproj$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet build AuthService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet test \\.\\\\tests\\\\AuthService\\.Api\\.IntegrationTests\\\\AuthService\\.Api\\.IntegrationTests\\.csproj$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\AuthService\"; dotnet test \\.\\\\tests\\\\AuthService\\.Application\\.Tests\\\\AuthService\\.Application\\.Tests\\.csproj$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

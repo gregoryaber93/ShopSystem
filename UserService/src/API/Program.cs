@@ -8,8 +8,8 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using UserService.Application;
+using UserService.Api.Grpc;
 using UserService.Api.Middleware;
-using UserService.Application.Abstractions.Security;
 using UserService.Infrastructure;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Security;
@@ -24,6 +24,7 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddGrpc();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -104,10 +105,6 @@ public class Program
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
-
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasherService>();
-            var seedOptions = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AdminSeedOptions>>();
-            await UserDbSeeder.SeedDefaultsAsync(dbContext, passwordHasher, seedOptions, CancellationToken.None);
         }
 
         if (app.Environment.IsDevelopment())
@@ -126,6 +123,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGrpcService<UserProfilesGrpcService>();
         app.MapControllers();
 
         await app.RunAsync();

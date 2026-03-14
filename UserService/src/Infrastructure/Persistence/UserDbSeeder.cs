@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using UserService.Application.Abstractions.Security;
 using UserService.Domain.Entities;
 using UserService.Infrastructure.Security;
 
@@ -10,7 +9,6 @@ public static class UserDbSeeder
 {
     public static async Task SeedDefaultsAsync(
         UserDbContext dbContext,
-        IPasswordHasherService passwordHasherService,
         IOptions<AdminSeedOptions> adminSeedOptions,
         CancellationToken cancellationToken)
     {
@@ -49,8 +47,7 @@ public static class UserDbSeeder
         var admin = new UserEntity
         {
             Id = Guid.NewGuid(),
-            Email = adminEmail,
-            PasswordHash = passwordHasherService.HashPassword(adminSeed.Password)
+            Email = adminEmail
         };
 
         admin.UserRoles.Add(new UserRoleEntity

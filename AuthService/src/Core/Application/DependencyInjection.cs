@@ -1,5 +1,7 @@
 using AuthenticationService.Application.Abstractions.CQRS;
+using AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
 using AuthenticationService.Application.Features.Authentication.Commands.Login;
+using AuthenticationService.Application.Features.Authentication.Commands.ProvisionIdentity;
 using AuthenticationService.Application.Features.Authentication.Commands.Register;
 using AuthenticationService.Contracts.Dtos;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,8 @@ public static class DependencyInjection
     {
         services.AddScoped<ICommandHandler<RegisterCommand, AuthResponseDto?>, RegisterCommandHandler>();
         services.AddScoped<ICommandHandler<LoginCommand, AuthResponseDto?>, LoginCommandHandler>();
+        services.AddScoped<ICommandHandler<ProvisionIdentityCommand, ProvisionedIdentityDto?>, ProvisionIdentityCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteIdentityCommand, bool>, DeleteIdentityCommandHandler>();
 
         return services;
     }

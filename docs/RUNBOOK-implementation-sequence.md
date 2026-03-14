@@ -29,3 +29,22 @@
 - No critical auth/role vulnerabilities.
 - Event delivery and idempotency validated.
 - Monitoring and alerting enabled.
+
+## Internal User Provisioning Secrets
+- Do not store internal API keys in repository files.
+- Set `AuthService` secret in environment variable: `UserService__InternalApiKey`.
+- Set `UserService` secret in environment variable: `InternalApi__ApiKey`.
+- Keys must be identical for successful internal profile provisioning.
+
+## Admin Seed Ownership
+- `AuthService` is the single owner of admin bootstrap (`auth_users`, password, roles).
+- `UserService` does not seed admin locally.
+- Admin profile in `UserService` is synchronized from `AuthService` using `UserCreated` outbox event.
+- This guarantees the same `UserId` for admin in both services.
+
+## Docker Startup (Auth + User + Broker)
+- Start brokers first from repository root: `docker compose -f docker-compose.brokers.yml up -d`.
+- Start UserService stack: `cd UserService && docker compose up -d`.
+- Start AuthService stack: `cd AuthService && docker compose up -d`.
+- Verify API health manually on `http://localhost:5300` (UserService) and `http://localhost:5294` (AuthService).
+- Compose files are preconfigured for gRPC sync and RabbitMQ outbox publish/consume.

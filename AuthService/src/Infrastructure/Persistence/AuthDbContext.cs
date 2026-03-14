@@ -8,6 +8,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public DbSet<AuthUserEntity> Users => Set<AuthUserEntity>();
     public DbSet<AuthRoleEntity> Roles => Set<AuthRoleEntity>();
     public DbSet<AuthUserRoleEntity> UserRoles => Set<AuthUserRoleEntity>();
+    public DbSet<AuthOutboxMessageEntity> OutboxMessages => Set<AuthOutboxMessageEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,6 +56,28 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                 .WithMany(role => role.UserRoles)
                 .HasForeignKey(userRole => userRole.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AuthOutboxMessageEntity>(entity =>
+        {
+            entity.ToTable("auth_outbox_messages");
+            entity.HasKey(message => message.Id);
+
+            entity.Property(message => message.EventType)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(message => message.PayloadJson)
+                .IsRequired();
+
+            entity.Property(message => message.Status)
+                .HasMaxLength(40)
+                .IsRequired();
+
+            entity.Property(message => message.LastError)
+                .HasMaxLength(2000);
+
+            entity.HasIndex(message => new { message.Status, message.NextAttemptAtUtc });
         });
     }
 }

@@ -22,10 +22,20 @@ services:
       - "5300:8080"
     networks:
       - userservice-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=user_service_dev;Username=postgres;Password=postgres
+      InternalApi__ApiKey: shopsystem-internal-dev-key
+      MessageBrokers__RabbitMq__Host: host.docker.internal
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: AuthService.exchange
+      MessageBrokers__RabbitMq__UserCreatedRoutingKey: users.created.v1
+      MessageBrokers__RabbitMq__UserCreatedQueue: userservice.users.created.v1
     depends_on:
       - postgres
 

@@ -1,0 +1,42 @@
+using AuthenticationService.Application.Abstractions.CQRS;
+using AuthenticationService.Application.Features.Authentication.Commands.DeleteIdentity;
+using AuthenticationService.Application.Features.Authentication.Commands.ProvisionIdentity;
+using AuthenticationService.Contracts.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AuthenticationService.Api.Controllers;
+
+[ApiController]
+[Route("api/authentication/internal")]
+[Authorize(Roles = "Admin")]
+public sealed class InternalAuthenticationController(
+    ICommandHandler<ProvisionIdentityCommand, ProvisionedIdentityDto?> provisionIdentityCommandHandler,
+    ICommandHandler<DeleteIdentityCommand, bool> deleteIdentityCommandHandler) : ControllerBase
+{
+    [HttpPost("provision-user")]
+    public async Task<ActionResult<ProvisionedIdentityDto>> ProvisionUser([FromBody] ProvisionIdentityRequestDto request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await provisionIdentityCommandHandler.Handle(new ProvisionIdentityCommand(request), cancellationToken);
+            if (result is null)
+            {
+                return Conflict("Uzytkownik o podanym emailu juz istnieje.");
+            }
+
+            return Ok(result);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+    }
+
+    [HttpDelete("users/{userId:guid}")]
+    public async Task<IActionResult> DeleteProvisionedUser(Guid userId, CancellationToken cancellationToken)
+    {
+        var deleted = await deleteIdentityCommandHandler.Handle(new DeleteIdentityCommand(userId), cancellationToken);
+        return deleted ? NoContent() : NotFound();
+    }
+}

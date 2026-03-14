@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UserService.Application.Abstractions.Identity;
 using UserService.Application.Abstractions.Persistence;
 using UserService.Application.Abstractions.Security;
+using UserService.Infrastructure.Identity;
+using UserService.Infrastructure.Messaging;
 using UserService.Infrastructure.Observability;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Security;
@@ -20,12 +23,21 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<JwtRsaOptions>(configuration.GetSection(JwtRsaOptions.SectionName));
-        services.Configure<AdminSeedOptions>(configuration.GetSection(AdminSeedOptions.SectionName));
+        services.Configure<MessageBrokersOptions>(configuration.GetSection(MessageBrokersOptions.SectionName));
+        services.Configure<InternalApiOptions>(configuration.GetSection(InternalApiOptions.SectionName));
+        services.Configure<AuthenticationServiceClientOptions>(configuration.GetSection(AuthenticationServiceClientOptions.SectionName));
 
         services.AddHttpContextAccessor();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddSingleton<IPasswordHasherService, Pbkdf2PasswordHasherService>();
         services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
+        services.AddHostedService<UserCreatedConsumerWorker>();
+
+        var authenticationServiceUrl = configuration[$"{AuthenticationServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5294";
+        services.AddHttpClient<IAuthIdentityProvisioningClient, AuthIdentityProvisioningClient>(client =>
+        {
+            client.BaseAddress = new Uri(authenticationServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
         services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>

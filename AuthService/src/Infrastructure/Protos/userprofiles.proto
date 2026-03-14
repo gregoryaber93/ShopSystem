@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopSystem.Contracts.Grpc.UserProfiles";
+
+package shopsystem.userprofiles.v1;
+
+service UserProfilesGrpc {
+  rpc CreateOrUpdateProfile (CreateOrUpdateProfileRequest) returns (CreateOrUpdateProfileResponse);
+}
+
+message CreateOrUpdateProfileRequest {
+  string user_id = 1;
+  string email = 2;
+  repeated string roles = 3;
+  string internal_api_key = 4;
+}
+
+message CreateOrUpdateProfileResponse {
+  bool success = 1;
+  bool conflict = 2;
+  string error = 3;
+}

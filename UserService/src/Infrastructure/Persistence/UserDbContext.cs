@@ -8,6 +8,7 @@ public sealed class UserDbContext(DbContextOptions<UserDbContext> options) : DbC
     public DbSet<UserEntity> Users => Set<UserEntity>();
     public DbSet<RoleEntity> Roles => Set<RoleEntity>();
     public DbSet<UserRoleEntity> UserRoles => Set<UserRoleEntity>();
+    public DbSet<UserProcessedEventEntity> ProcessedEvents => Set<UserProcessedEventEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,10 +19,6 @@ public sealed class UserDbContext(DbContextOptions<UserDbContext> options) : DbC
 
             entity.Property(user => user.Email)
                 .HasMaxLength(320)
-                .IsRequired();
-
-            entity.Property(user => user.PasswordHash)
-                .HasMaxLength(512)
                 .IsRequired();
 
             entity.HasIndex(user => user.Email)
@@ -55,6 +52,12 @@ public sealed class UserDbContext(DbContextOptions<UserDbContext> options) : DbC
                 .WithMany(role => role.UserRoles)
                 .HasForeignKey(userRole => userRole.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserProcessedEventEntity>(entity =>
+        {
+            entity.ToTable("user_processed_events");
+            entity.HasKey(processed => processed.EventId);
         });
     }
 }
