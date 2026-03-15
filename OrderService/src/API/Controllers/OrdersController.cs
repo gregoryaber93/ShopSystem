@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Abstractions.CQRS;
 using OrderService.Application.Features.Orders.Commands.PlaceOrder;
+using OrderService.Application.Features.Orders.Commands.PlaceOrderFromCart;
 using OrderService.Application.Features.Orders.Queries.GetMyOrders;
 using OrderService.Application.Features.Orders.Queries.GetOrdersByShop;
 using OrderService.Application.Features.Orders.Queries.ReplayOrderProjection;
@@ -17,6 +18,7 @@ namespace OrderService.Api.Controllers;
 [Authorize(Roles = "Admin,Manager,User")]
 public class OrdersController(
     ICommandHandler<PlaceOrderCommand, OrderDto> placeOrderCommandHandler,
+    ICommandHandler<PlaceOrderFromCartCommand, CartCheckoutResultDto> placeOrderFromCartCommandHandler,
     IDistributedCache distributedCache,
     IQueryHandler<GetMyOrdersQuery, IReadOnlyCollection<OrderDto>> getMyOrdersQueryHandler,
     IQueryHandler<GetOrdersByShopQuery, IReadOnlyCollection<OrderDto>> getOrdersByShopQueryHandler,
@@ -49,6 +51,47 @@ public class OrdersController(
             }, cancellationToken);
 
             return Created($"/api/orders/{order.Id}", order);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Problem(
+                title: "gRPC integration failure",
+                detail: exception.Message,
+                statusCode: StatusCodes.Status502BadGateway);
+        }
+    }
+
+    [HttpPost("cart-checkout")]
+    [Authorize(Roles = "Admin,Manager,User")]
+    public async Task<ActionResult<CartCheckoutResultDto>> PlaceOrderFromCart([FromBody] PlaceOrderFromCartRequestDto request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var idempotencyKey = Request.Headers["Idempotency-Key"].ToString();
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                return BadRequest(new { error = "Idempotency-Key header is required." });
+            }
+
+            var userId = ResolveUserId(User);
+            var cacheKey = $"idempotency:orders-cart:{userId:N}:{idempotencyKey}";
+            var cached = await distributedCache.GetStringAsync(cacheKey, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(cached))
+            {
+                return Ok(new { duplicate = true, message = "Cart checkout already processed for this Idempotency-Key." });
+            }
+
+            var checkout = await placeOrderFromCartCommandHandler.Handle(new PlaceOrderFromCartCommand(userId, request), cancellationToken);
+            await distributedCache.SetStringAsync(cacheKey, string.Join(',', checkout.Orders.Select(item => item.Order.Id.ToString("D"))), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12)
+            }, cancellationToken);
+
+            return Ok(checkout);
         }
         catch (ArgumentException exception)
         {

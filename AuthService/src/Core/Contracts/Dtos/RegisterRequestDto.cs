@@ -1,3 +1,3 @@
 namespace AuthService.Contracts.Dtos;
 
-public sealed record RegisterRequestDto(string Email, string Password, IReadOnlyCollection<string>? Roles = null);
+public sealed record RegisterRequestDto(string Email, string Password);

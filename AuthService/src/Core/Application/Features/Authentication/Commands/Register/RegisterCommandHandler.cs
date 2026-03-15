@@ -29,22 +29,8 @@ public sealed class RegisterCommandHandler(
             return null;
         }
 
-        var roles = (command.Request.Roles ?? [])
-            .Where(role => !string.IsNullOrWhiteSpace(role))
-            .Select(role => role.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
 
-        if (roles.Length == 0)
-        {
-            roles = ["User"];
-        }
-
-        var invalidRoles = roles.Where(role => !AllowedRoles.Contains(role)).ToArray();
-        if (invalidRoles.Length > 0)
-        {
-            throw new ArgumentException($"Nieobslugiwane role: {string.Join(", ", invalidRoles)}");
-        }
+        var roles = new List<string> { "User" };
 
         var roleEntities = await authUserRepository.GetOrCreateRolesAsync(roles, cancellationToken);
 

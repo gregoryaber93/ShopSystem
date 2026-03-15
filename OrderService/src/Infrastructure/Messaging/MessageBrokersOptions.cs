@@ -22,6 +22,14 @@ public sealed class RabbitMqOptions
     public string Exchange { get; set; } = "OrderService.exchange";
 
     public string DeadLetterExchange { get; set; } = "OrderService.exchange.dlq";
+
+    public string PaymentEventsExchange { get; set; } = "PaymantService.exchange";
+
+    public string PaymentAuthorizedRoutingKey { get; set; } = "paymentauthorized";
+
+    public string PaymentFailedRoutingKey { get; set; } = "paymentfailed";
+
+    public string PaymentAuthorizedQueue { get; set; } = "orderservice.payments.authorized.v1";
 }
 
 public sealed class KafkaOptions

@@ -26,6 +26,19 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=order_service_dev;Username=postgres;Password=postgres
+      Grpc__PromotionService__Address: http://host.docker.internal:5293
+      MessageBrokers__RabbitMq__Host: host.docker.internal
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: OrderService.exchange
+      MessageBrokers__RabbitMq__DeadLetterExchange: OrderService.exchange.dlq
+      MessageBrokers__RabbitMq__PaymentEventsExchange: PaymantService.exchange
+      MessageBrokers__RabbitMq__PaymentAuthorizedRoutingKey: paymentauthorized
+      MessageBrokers__RabbitMq__PaymentFailedRoutingKey: paymentfailed
+      MessageBrokers__RabbitMq__PaymentAuthorizedQueue: orderservice.payments.authorized.v1
+      MessageBrokers__Kafka__BootstrapServers: host.docker.internal:9092
+      MessageBrokers__Kafka__TopicPrefix: orders
     depends_on:
       - postgres
 

@@ -123,6 +123,31 @@
         "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\AuthService\"; dotnet test \\.\\\\tests\\\\AuthService\\.Application\\.Tests\\\\AuthService\\.Application\\.Tests\\.csproj$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "/^Set-Location \"d:\\\\Projects\\\\learn\\\\Main\\\\ShopSystem\\\\OrderService\"; dotnet new xunit -n OrderService\\.Infrastructure\\.Tests -o tests/OrderService\\.Infrastructure\\.Tests$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet add tests/OrderService\\.Infrastructure\\.Tests/OrderService\\.Infrastructure\\.Tests\\.csproj reference src/Infrastructure/OrderService\\.Infrastructure\\.csproj; dotnet add tests/OrderService\\.Infrastructure\\.Tests/OrderService\\.Infrastructure\\.Tests\\.csproj package Microsoft\\.EntityFrameworkCore\\.InMemory --version 9\\.0\\.1; dotnet sln OrderService\\.sln add tests/OrderService\\.Infrastructure\\.Tests/OrderService\\.Infrastructure\\.Tests\\.csproj$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dotnet test OrderService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd DashboardService; dotnet build DashboardService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd LoggerService; dotnet build LoggerService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd OrderService; dotnet build OrderService\\.sln$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "dotnet build": true
     }
 }

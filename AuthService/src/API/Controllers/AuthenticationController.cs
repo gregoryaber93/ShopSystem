@@ -42,6 +42,19 @@ public class AuthenticationController(
         }
     }
 
+    [HttpPost("registerTest")]
+    public async Task<ActionResult<AuthResponseDto>> RegisterTest([FromBody] RegisterRequestDto request, CancellationToken cancellationToken)
+    {
+        return Ok("registerTest");
+    }
+
+
+    [HttpPost("loginTest")]
+    public async Task<ActionResult<AuthResponseDto>> LoginTest([FromBody] LoginRequestDto request, CancellationToken cancellationToken)
+    {
+        return Ok("loginTest");
+    }
+
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request, CancellationToken cancellationToken)
     {

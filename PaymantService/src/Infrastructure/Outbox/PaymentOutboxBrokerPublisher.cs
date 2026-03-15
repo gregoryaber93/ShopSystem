@@ -64,7 +64,14 @@ public sealed class PaymentOutboxBrokerPublisher(IOptions<MessageBrokersOptions>
         await producer.ProduceAsync(topic, new Message<string, string>
         {
             Key = string.IsNullOrWhiteSpace(message.PartitionKey) ? message.EventId.ToString("N") : message.PartitionKey,
-            Value = message.Payload
+            Value = message.Payload,
+            Headers = new Confluent.Kafka.Headers
+            {
+                { "eventType", Encoding.UTF8.GetBytes(message.EventType) },
+                { "eventVersion", Encoding.UTF8.GetBytes("1") },
+                { "occurredOnUtc", Encoding.UTF8.GetBytes(message.OccurredOnUtc.ToString("O")) },
+                { "correlationId", Encoding.UTF8.GetBytes(message.EventId.ToString("N")) }
+            }
         }, cancellationToken);
     }
 }

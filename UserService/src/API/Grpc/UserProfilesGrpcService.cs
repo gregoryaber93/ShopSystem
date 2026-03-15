@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using ShopSystem.Contracts.Grpc.UserProfiles;
 using UserService.Application.Abstractions.CQRS;
 using UserService.Application.Features.Users.Commands.CreateOrUpdateUserProfile;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace UserService.Api.Grpc;
 
+[AllowAnonymous]
 public sealed class UserProfilesGrpcService(
     ICommandHandler<CreateOrUpdateUserProfileCommand, UserDto?> createOrUpdateUserProfileCommandHandler,
     IOptions<InternalApiOptions> internalApiOptions) : UserProfilesGrpc.UserProfilesGrpcBase

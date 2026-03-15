@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option csharp_namespace = "ShopSystem.Contracts.Grpc.Promotions";
+
+package shopsystem.promotions.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service PromotionsGrpc {
+  rpc GetPromotions (GetPromotionsRequest) returns (GetPromotionsResponse);
+  rpc EvaluatePromotions (EvaluatePromotionsRequest) returns (EvaluatePromotionsResponse);
+}
+
+enum PromotionType {
+  PROMOTION_TYPE_UNSPECIFIED = 0;
+  PRODUCT_DISCOUNT = 1;
+  LOYALTY_POINTS = 2;
+}
+
+message PromotionDto {
+  string id = 1;
+  PromotionType type = 2;
+  double discount_percentage = 3;
+  repeated string product_ids = 4;
+  google.protobuf.Timestamp starts_at_utc = 5;
+  google.protobuf.Timestamp ends_at_utc = 6;
+  double required_points = 7;
+}
+
+message GetPromotionsRequest {
+  bool only_active = 1;
+  google.protobuf.Timestamp evaluated_at_utc = 2;
+}
+
+message GetPromotionsResponse {
+  repeated PromotionDto promotions = 1;
+}
+
+message EvaluatePromotionsRequest {
+  string user_id = 1;
+  double subtotal = 2;
+  repeated string product_ids = 3;
+  google.protobuf.Timestamp evaluated_at_utc = 4;
+}
+
+message AppliedPromotionDto {
+  string promotion_id = 1;
+  PromotionType type = 2;
+  double discount_percentage = 3;
+  string reason = 4;
+}
+
+message EvaluatePromotionsResponse {
+  string user_id = 1;
+  double subtotal = 2;
+  double total_discount_percentage = 3;
+  double discount_amount = 4;
+  double final_price = 5;
+  repeated AppliedPromotionDto applied_promotions = 6;
+}

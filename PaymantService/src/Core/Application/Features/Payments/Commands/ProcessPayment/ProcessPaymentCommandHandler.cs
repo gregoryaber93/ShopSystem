@@ -19,6 +19,9 @@ public sealed class ProcessPaymentCommandHandler(
         var normalizedCurrency = command.Request.Currency.Trim().ToUpperInvariant();
         var normalizedMethod = command.Request.Method.Trim();
 
+        var isDeclined = IsDeclinedPaymentMethod(normalizedMethod);
+        var paymentStatus = isDeclined ? "Failed" : "Completed";
+
         var payment = new PaymentEntity
         {
             Id = Guid.NewGuid(),
@@ -28,31 +31,57 @@ public sealed class ProcessPaymentCommandHandler(
             Amount = normalizedAmount,
             Currency = normalizedCurrency,
             Method = normalizedMethod,
-            Status = "Completed",
+            Status = paymentStatus,
             PaidAtUtc = DateTime.UtcNow
         };
 
         await paymentRepository.AddAsync(payment, cancellationToken);
 
-        var integrationEvent = new PaymentAuthorizedIntegrationEventV1(
-            EventId: Guid.NewGuid(),
-            OccurredOnUtc: payment.PaidAtUtc,
-            PaymentId: payment.Id,
-            UserId: payment.UserId,
-            ShopId: payment.ShopId,
-            OrderId: payment.OrderId,
-            Amount: payment.Amount,
-            Currency: payment.Currency,
-            Method: payment.Method,
-            Status: payment.Status);
+        if (isDeclined)
+        {
+            var failedEvent = new PaymentFailedIntegrationEventV1(
+                EventId: Guid.NewGuid(),
+                OccurredOnUtc: payment.PaidAtUtc,
+                PaymentId: payment.Id,
+                UserId: payment.UserId,
+                ShopId: payment.ShopId,
+                OrderId: payment.OrderId,
+                Amount: payment.Amount,
+                Currency: payment.Currency,
+                Method: payment.Method,
+                Status: payment.Status,
+                Reason: "Payment method was marked as declined.");
 
-        await paymentOutboxWriter.EnqueueAsync(
-            integrationEvent.EventId,
-            "PaymentAuthorized",
-            JsonSerializer.Serialize(integrationEvent),
-            payment.UserId.ToString("N"),
-            integrationEvent.OccurredOnUtc,
-            cancellationToken);
+            await paymentOutboxWriter.EnqueueAsync(
+                failedEvent.EventId,
+                "PaymentFailed",
+                JsonSerializer.Serialize(failedEvent),
+                payment.OrderId.ToString("N"),
+                failedEvent.OccurredOnUtc,
+                cancellationToken);
+        }
+        else
+        {
+            var authorizedEvent = new PaymentAuthorizedIntegrationEventV1(
+                EventId: Guid.NewGuid(),
+                OccurredOnUtc: payment.PaidAtUtc,
+                PaymentId: payment.Id,
+                UserId: payment.UserId,
+                ShopId: payment.ShopId,
+                OrderId: payment.OrderId,
+                Amount: payment.Amount,
+                Currency: payment.Currency,
+                Method: payment.Method,
+                Status: payment.Status);
+
+            await paymentOutboxWriter.EnqueueAsync(
+                authorizedEvent.EventId,
+                "PaymentAuthorized",
+                JsonSerializer.Serialize(authorizedEvent),
+                payment.OrderId.ToString("N"),
+                authorizedEvent.OccurredOnUtc,
+                cancellationToken);
+        }
 
         await paymentRepository.SaveChangesAsync(cancellationToken);
 
@@ -104,6 +133,12 @@ public sealed class ProcessPaymentCommandHandler(
             payment.Method,
             payment.Status,
             payment.PaidAtUtc);
+    }
+
+    private static bool IsDeclinedPaymentMethod(string method)
+    {
+        return method.Equals("DECLINED", StringComparison.OrdinalIgnoreCase)
+            || method.Equals("FAIL", StringComparison.OrdinalIgnoreCase);
     }
 }
 

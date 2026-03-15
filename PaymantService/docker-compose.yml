@@ -26,6 +26,14 @@
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=paymant_service_dev;Username=postgres;Password=postgres
+      MessageBrokers__RabbitMq__Host: host.docker.internal
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: PaymantService.exchange
+      MessageBrokers__RabbitMq__DeadLetterExchange: PaymantService.exchange.dlq
+      MessageBrokers__Kafka__BootstrapServers: host.docker.internal:9092
+      MessageBrokers__Kafka__TopicPrefix: payments
     depends_on:
       - postgres
 

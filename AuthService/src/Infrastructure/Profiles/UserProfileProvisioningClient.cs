@@ -11,8 +11,9 @@ internal sealed class UserProfileProvisioningClient(
     public async Task<bool> CreateOrUpdateProfileAsync(Guid userId, string email, IReadOnlyCollection<string> roles, CancellationToken cancellationToken)
     {
         var configuredOptions = options.Value;
-
-        var response = await grpcClient.CreateOrUpdateProfileAsync(
+        try
+        {
+            var response = await grpcClient.CreateOrUpdateProfileAsync(
             new CreateOrUpdateProfileRequest
             {
                 UserId = userId.ToString(),
@@ -22,16 +23,21 @@ internal sealed class UserProfileProvisioningClient(
             },
             cancellationToken: cancellationToken);
 
-        if (response.Conflict)
-        {
-            return false;
-        }
+            if (response.Conflict)
+            {
+                return false;
+            }
 
-        if (!response.Success)
+            if (!response.Success)
+            {
+                throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Error)
+                    ? "Nieznany blad podczas synchronizacji profilu przez gRPC."
+                    : response.Error);
+            }
+        }
+        catch(Exception e)
         {
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(response.Error)
-                ? "Nieznany blad podczas synchronizacji profilu przez gRPC."
-                : response.Error);
+            var k = e;
         }
 
         return true;

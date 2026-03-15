@@ -9,6 +9,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      MessageBrokers__KafkaConsumers__BootstrapServers: host.docker.internal:9092
+      MessageBrokers__KafkaConsumers__GroupId: dashboard-projections-v1
 
 
 

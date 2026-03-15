@@ -24,6 +24,11 @@
 1. Complete `CHECKLISTA-PR6-redis-logger-observability.md`.
 2. Verify tracing, logging, and cache metrics.
 
+## Stage 7
+1. Complete `CHECKLISTA-PR7-rabbitmq-kafka-split.md`.
+2. Finalize `PR7-event-routing-matrix.md` for all versioned events.
+3. Validate RabbitMQ workflow paths and Kafka replay/analytics paths.
+
 ## Production Gate Criteria
 - All checklists completed.
 - No critical auth/role vulnerabilities.

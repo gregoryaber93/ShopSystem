@@ -7,11 +7,13 @@ using OrderService.Application.Abstractions.Persistence;
 using OrderService.Infrastructure.Messaging;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Outbox;
+using OrderService.Infrastructure.Promotion;
 using OrderService.Infrastructure.ProductCatalog;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Security;
 using Polly;
 using Polly.Extensions.Http;
+using ShopSystem.Contracts.Grpc.Promotions;
 using ShopSystem.Contracts.Grpc.Products;
 
 namespace OrderService.Infrastructure;
@@ -44,6 +46,12 @@ public static class DependencyInjection
             throw new InvalidOperationException($"Configuration '{ProductCatalogGrpcOptions.SectionName}:Address' is required.");
         }
 
+        var promotionGrpcAddress = configuration[$"{PromotionGrpcOptions.SectionName}:Address"];
+        if (string.IsNullOrWhiteSpace(promotionGrpcAddress))
+        {
+            throw new InvalidOperationException($"Configuration '{PromotionGrpcOptions.SectionName}:Address' is required.");
+        }
+
         services.AddGrpcClient<ProductsGrpc.ProductsGrpcClient>(options =>
         {
             options.Address = new Uri(grpcAddress);
@@ -59,13 +67,31 @@ public static class DependencyInjection
         .AddPolicyHandler(GetCircuitBreakerPolicy())
         .AddPolicyHandler(GetTimeoutPolicy());
 
+        services.AddGrpcClient<PromotionsGrpc.PromotionsGrpcClient>(options =>
+        {
+            options.Address = new Uri(promotionGrpcAddress);
+        })
+        .AddCallCredentials((context, metadata, serviceProvider) =>
+        {
+            var jwtTokenService = serviceProvider.GetRequiredService<IJwtTokenService>();
+            var token = jwtTokenService.CreateServiceToken("orderservice-promotions-grpc-client");
+            metadata.Add("Authorization", $"Bearer {token}");
+            return Task.CompletedTask;
+        })
+        .AddPolicyHandler(GetRetryPolicy())
+        .AddPolicyHandler(GetCircuitBreakerPolicy())
+        .AddPolicyHandler(GetTimeoutPolicy());
+
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderEventStore, OrderEventStore>();
         services.AddScoped<IOrderProjectionRebuilder, OrderProjectionRebuilder>();
         services.AddScoped<IProductCatalogGateway, ProductCatalogGrpcGateway>();
+        services.AddScoped<IPromotionGateway, PromotionGrpcGateway>();
         services.AddScoped<IOrderOutboxWriter, OrderOutboxWriter>();
         services.AddScoped<IOrderOutboxBrokerPublisher, OrderOutboxBrokerPublisher>();
+        services.AddScoped<IPaymentAuthorizedEventHandler, PaymentAuthorizedEventHandler>();
         services.AddHostedService<OrderOutboxPublisherWorker>();
+        services.AddHostedService<PaymentAuthorizedConsumerWorker>();
 
         var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
         services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>
