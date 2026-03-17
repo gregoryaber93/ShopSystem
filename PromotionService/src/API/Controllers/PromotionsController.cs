@@ -123,18 +123,29 @@ public class PromotionsController(
         {
             return BadRequest(new { error = exception.Message });
         }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = exception.Message });
+        }
     }
 
     [HttpDelete("deletePromotion/{id:guid}")]
     [Authorize(Roles = "Manager")]
     public async Task<ActionResult> DeletePromotion(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await deletePromotionCommandHandler.Handle(new DeletePromotionCommand(id), cancellationToken);
-        if (!deleted)
+        try
         {
-            return NotFound();
-        }
+            var deleted = await deletePromotionCommandHandler.Handle(new DeletePromotionCommand(id), cancellationToken);
+            if (!deleted)
+            {
+                return NotFound();
+            }
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = exception.Message });
+        }
     }
 }

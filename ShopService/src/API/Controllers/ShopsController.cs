@@ -28,7 +28,7 @@ public class ShopsController(
     }
 
     [HttpPost("addShop")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ShopDto>> AddShop([FromBody] ShopDto shopDto, CancellationToken cancellationToken)
     {
         var createdShop = await addShopCommandHandler.Handle(new AddShopCommand(shopDto), cancellationToken);
@@ -36,28 +36,42 @@ public class ShopsController(
     }
 
     [HttpPut("updateShop/{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ShopDto>> UpdateShop(Guid id, [FromBody] ShopDto shopDto, CancellationToken cancellationToken)
     {
-        var updatedShop = await updateShopCommandHandler.Handle(new UpdateShopCommand(id, shopDto), cancellationToken);
-        if (updatedShop is null)
+        try
         {
-            return NotFound();
-        }
+            var updatedShop = await updateShopCommandHandler.Handle(new UpdateShopCommand(id, shopDto), cancellationToken);
+            if (updatedShop is null)
+            {
+                return NotFound();
+            }
 
-        return Ok(updatedShop);
+            return Ok(updatedShop);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, exception.Message);
+        }
     }
 
     [HttpDelete("deleteShop/{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult> DeleteShop(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await deleteShopCommandHandler.Handle(new DeleteShopCommand(id), cancellationToken);
-        if (!deleted)
+        try
         {
-            return NotFound();
-        }
+            var deleted = await deleteShopCommandHandler.Handle(new DeleteShopCommand(id), cancellationToken);
+            if (!deleted)
+            {
+                return NotFound();
+            }
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, exception.Message);
+        }
     }
 }

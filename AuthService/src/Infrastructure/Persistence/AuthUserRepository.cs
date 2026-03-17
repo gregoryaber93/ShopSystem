@@ -66,6 +66,12 @@ public sealed class AuthUserRepository(AuthDbContext dbContext) : IAuthUserRepos
         return dbContext.Users.AddAsync(user, cancellationToken).AsTask();
     }
 
+    public void RemoveUserRole(AuthUserRoleEntity userRole)
+    {
+        userRole.User.UserRoles.Remove(userRole);
+        dbContext.UserRoles.Remove(userRole);
+    }
+
     public void RemoveUser(AuthUserEntity user)
     {
         dbContext.Users.Remove(user);

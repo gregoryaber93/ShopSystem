@@ -1,10 +1,15 @@
 using ProductService.Application.Abstractions.CQRS;
 using ProductService.Application.Abstractions.Persistence;
+using ProductService.Application.Abstractions.Security;
+using ProductService.Application.Abstractions.Shops;
 using ProductService.Contracts.Dtos;
 
 namespace ProductService.Application.Features.Products.Commands.UpdateProduct;
 
-public sealed class UpdateProductCommandHandler(IProductRepository productRepository) : ICommandHandler<UpdateProductCommand, ProductDto?>
+public sealed class UpdateProductCommandHandler(
+    IProductRepository productRepository,
+    IShopOwnershipClient shopOwnershipClient,
+    ICurrentUserService currentUserService) : ICommandHandler<UpdateProductCommand, ProductDto?>
 {
     public async Task<ProductDto?> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
     {
@@ -12,6 +17,16 @@ public sealed class UpdateProductCommandHandler(IProductRepository productReposi
         if (product is null)
         {
             return null;
+        }
+
+        if (currentUserService.IsInRole("Manager"))
+        {
+            var currentUserId = currentUserService.GetUserIdOrThrow();
+            var ownerUserId = await shopOwnershipClient.GetShopOwnerAsync(product.ShopId, cancellationToken);
+            if (ownerUserId != currentUserId)
+            {
+                throw new UnauthorizedAccessException("Manager can only update products in their own shops.");
+            }
         }
 
         ValidateProduct(command.Product);

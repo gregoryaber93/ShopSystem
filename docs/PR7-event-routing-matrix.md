@@ -1,51 +1,52 @@
 # PR7 - Event Routing Matrix
 
-## Jak korzystac z dokumentu
-- Jedna linia = jeden event wersjonowany.
-- `RabbitMQ` oznacza kanal workflow (szybka reakcja, retry, DLQ).
-- `Kafka` oznacza kanal stream/replay/analityka.
-- `PartitionKey` musi zachowac semantyke kolejnosci dla agregatu.
+## How to use this document
+- One row = one versioned event.
+- `RabbitMQ` means workflow channel (fast reaction, retry, DLQ).
+- `Kafka` means stream/replay/analytics channel.
+- `PartitionKey` must preserve ordering semantics for an aggregate.
 
-## Matryca
+## Matrix
 
-| Event | Producer | RabbitMQ | Kafka | PartitionKey | Consumerzy (workflow) | Consumerzy (stream) | Uwagi |
+| Event | Producer | RabbitMQ | Kafka | PartitionKey | Consumers (workflow) | Consumers (stream) | Notes |
 |---|---|---|---|---|---|---|---|
-| UserCreated.v1 | AuthService | TAK | OPCJONALNIE | UserId | UserService | Dashboard/Logger (opcjonalnie) | Provisioning profilu |
-| OrderPlaced.v1 | OrderService | TAK | TAK | OrderId lub UserId | PromotionService (opcjonalnie), Payment orchestration | DashboardService, LoggerService | Event hybrydowy |
-| PaymentAuthorized.v1 | PaymantService | TAK | TAK | OrderId | OrderService | DashboardService, LoggerService | Aktualizacja statusu zamowienia |
-| PaymentFailed.v1 | PaymantService | TAK | TAK | OrderId | OrderService | DashboardService, LoggerService | Workflow kompensacyjny |
-| PointsEarned.v1 | PromotionService | OPCJONALNIE | TAK | UserId | (wg potrzeb) | DashboardService, LoggerService | Ledger loyalty |
-| PointsSpent.v1 | PromotionService | OPCJONALNIE | TAK | UserId | (wg potrzeb) | DashboardService, LoggerService | Ledger loyalty |
-| LoyaltyProfileUpdated.v1 | PromotionService | OPCJONALNIE | TAK | UserId | (wg potrzeb) | DashboardService, LoggerService | Read model + analityka |
+| UserCreated.v1 | AuthService | YES | OPTIONAL | UserId | UserService | Dashboard/Logger (optional) | Profile provisioning |
+| OrderPlaced.v1 | OrderService | YES | YES | OrderId or UserId | PromotionService (optional), Payment orchestration | DashboardService, LoggerService | Hybrid event |
+| PaymentAuthorized.v1 | PaymantService | YES | YES | OrderId | OrderService | DashboardService, LoggerService | Order status update |
+| PaymentFailed.v1 | PaymantService | YES | YES | OrderId | OrderService | DashboardService, LoggerService | Compensation workflow |
+| PointsEarned.v1 | PromotionService | OPTIONAL | YES | UserId | (as needed) | DashboardService, LoggerService | Loyalty ledger |
+| PointsSpent.v1 | PromotionService | OPTIONAL | YES | UserId | (as needed) | DashboardService, LoggerService | Loyalty ledger |
+| LoyaltyProfileUpdated.v1 | PromotionService | OPTIONAL | YES | UserId | (as needed) | DashboardService, LoggerService | Read model + analytics |
 
-## Konwencje techniczne
+## Technical conventions
 - Rabbit exchange: `<ServiceName>.exchange`
-- Rabbit routing key: `<domain>.<event>.v1` albo utrzymane aktualne `<eventType>.ToLowerInvariant()` (wymagana spojnosc)
+- Rabbit routing key: `<domain>.<event>.v1` or keep current `<eventType>.ToLowerInvariant()` (consistency required)
 - Kafka topic: `<prefix>.<eventname>.v1`
 - Headers minimum:
   - `eventType`
   - `eventVersion`
   - `occurredOnUtc`
   - `correlationId`
-  - `causationId` (opcjonalnie)
+  - `causationId` (optional)
 
-## Decyzje do zatwierdzenia
+## Decisions to approve
 - [x] `OrderPlaced.v1` zostaje eventem hybrydowym (Rabbit + Kafka).
-- [x] `UserCreated.v1` nie trafia teraz do Kafka (tylko Rabbit workflow provisioning).
-- [x] Loyalty events pozostaja Kafka-first; Rabbit tylko opcjonalnie przy wymaganiu natychmiastowego workflow.
+- [x] `OrderPlaced.v1` remains a hybrid event (Rabbit + Kafka).
+- [x] `UserCreated.v1` does not go to Kafka for now (Rabbit workflow provisioning only).
+- [x] Loyalty events remain Kafka-first; Rabbit only optional when immediate workflow is required.
 
-## Zweryfikowane sciezki Stage 7
+## Verified Stage 7 flows
 - RabbitMQ workflow:
-  - `PaymantService` -> `OrderService` (`PaymentAuthorized.v1`, `PaymentFailed.v1`) z `ack/nack`, `requeue` i idempotencja po `EventId`.
-  - `AuthService` -> `UserService` (`UserCreated.v1`) jako workflow provisioning.
+  - `PaymantService` -> `OrderService` (`PaymentAuthorized.v1`, `PaymentFailed.v1`) with `ack/nack`, `requeue`, and idempotency by `EventId`.
+  - `AuthService` -> `UserService` (`UserCreated.v1`) as workflow provisioning.
 - Kafka stream/analytics:
-  - Publisherzy `OrderService` i `PaymantService` publikuja z kluczem `PartitionKey` i naglowkami (`eventType`, `eventVersion`, `occurredOnUtc`, `correlationId`).
-  - `DashboardService` konsumuje do projekcji: `orders_projection`, `payments_projection`, `loyalty_projection`.
-  - `LoggerService` konsumuje zdarzenia do centralnego audytu.
-  - `group.id` rozdzielone: `dashboard-projections-v1`, `logger-audit-v1`.
+  - Publishers `OrderService` and `PaymantService` publish with `PartitionKey` key and headers (`eventType`, `eventVersion`, `occurredOnUtc`, `correlationId`).
+  - `DashboardService` consumes into projections: `orders_projection`, `payments_projection`, `loyalty_projection`.
+  - `LoggerService` consumes events for central audit.
+  - `group.id` split: `dashboard-projections-v1`, `logger-audit-v1`.
 
 ## Review checklist
-- [ ] Kazdy event ma jawnie wybrany kanal i uzasadnienie.
-- [ ] Kazdy event ma okreslony partition key.
-- [ ] Konsument workflow ma idempotencje po EventId.
-- [ ] Konsument stream ma strategy replay (offset reset/checkpointing).
+- [ ] Each event has an explicitly selected channel and rationale.
+- [ ] Each event has a defined partition key.
+- [ ] Workflow consumer has idempotency by EventId.
+- [ ] Stream consumer has replay strategy (offset reset/checkpointing).

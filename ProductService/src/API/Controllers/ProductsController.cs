@@ -68,6 +68,10 @@ public class ProductsController(
         {
             return BadRequest(new { error = exception.Message });
         }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = exception.Message });
+        }
     }
 
     [HttpPut("{id:guid}")]
@@ -88,18 +92,29 @@ public class ProductsController(
         {
             return BadRequest(new { error = exception.Message });
         }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = exception.Message });
+        }
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Manager")]
     public async Task<ActionResult> DeleteProduct(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await deleteProductCommandHandler.Handle(new DeleteProductCommand(id), cancellationToken);
-        if (!deleted)
+        try
         {
-            return NotFound();
-        }
+            var deleted = await deleteProductCommandHandler.Handle(new DeleteProductCommand(id), cancellationToken);
+            if (!deleted)
+            {
+                return NotFound();
+            }
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = exception.Message });
+        }
     }
 }

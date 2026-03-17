@@ -10,5 +10,6 @@ public interface IUserRepository
     Task<IReadOnlyCollection<RoleEntity>> GetOrCreateRolesAsync(IReadOnlyCollection<string> roleNames, CancellationToken cancellationToken);
     Task AddUserAsync(UserEntity user, CancellationToken cancellationToken);
     void RemoveUserRole(UserRoleEntity userRole);
+    void RemoveUser(UserEntity user);
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

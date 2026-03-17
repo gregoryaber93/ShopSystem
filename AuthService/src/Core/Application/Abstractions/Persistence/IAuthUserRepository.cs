@@ -9,6 +9,7 @@ public interface IAuthUserRepository
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<AuthRoleEntity>> GetOrCreateRolesAsync(IReadOnlyCollection<string> roleNames, CancellationToken cancellationToken);
     Task AddUserAsync(AuthUserEntity user, CancellationToken cancellationToken);
+    void RemoveUserRole(AuthUserRoleEntity userRole);
     void RemoveUser(AuthUserEntity user);
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

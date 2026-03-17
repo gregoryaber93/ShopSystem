@@ -1,134 +1,134 @@
-# CHECKLISTA PR7 - RabbitMQ + Kafka (podzial odpowiedzialnosci)
+# CHECKLIST PR7 - RabbitMQ + Kafka (responsibility split)
 
-## Cel
-Wdrozyc oba brokery w jednym systemie, ale z jasnym podzialem odpowiedzialnosci:
-- RabbitMQ: workflow/integration commands (krotki czas reakcji, retry, DLQ).
-- Kafka: strumien zdarzen domenowych (retencja, replay, analityka, niezalezne consumer groups).
+## Goal
+Implement both brokers in one system, with a clear split of responsibilities:
+- RabbitMQ: workflow/integration commands (short response time, retry, DLQ).
+- Kafka: domain event stream (retention, replay, analytics, independent consumer groups).
 
-## Zakres
-- Serwisy transakcyjne: AuthService, UserService, OrderService, PaymantService, PromotionService.
-- Serwisy odczytowe/obserwowalnosc: DashboardService, LoggerService.
+## Scope
+- Transactional services: AuthService, UserService, OrderService, PaymantService, PromotionService.
+- Read/observability services: DashboardService, LoggerService.
 
-## Etap 0 - Baseline i konfiguracja
-- [x] Potwierdz, ze brokers stack dziala: `docker compose -f docker-compose.brokers.yml up -d`.
-- [ ] Ujednolic nazewnictwo kanalow:
+## Stage 0 - Baseline and configuration
+- [x] Confirm the broker stack is running: `docker compose -f docker-compose.brokers.yml up -d`.
+- [ ] Standardize channel naming:
   - Rabbit exchange per service, routing key per workflow.
   - Kafka topic: `<prefix>.<eventname>.v1`.
-- [x] Dla OrderService i PaymantService dodaj brakujace envy brokerow w docker-compose:
+- [x] For OrderService and PaymantService, add missing broker env vars in docker-compose:
   - `MessageBrokers__RabbitMq__Host/Port/Username/Password/Exchange/DeadLetterExchange`
   - `MessageBrokers__Kafka__BootstrapServers/TopicPrefix`
-- [x] Dodaj dokument mapy zdarzen `docs/PR7-event-routing-matrix.md` (wg Etapu 1).
+- [x] Add the event routing document `docs/PR7-event-routing-matrix.md` (per Stage 1).
 
-## Etap 1 - Event Routing Matrix (decyzja projektowa)
-Dla kazdego eventu okresl docelowy kanal i klucz partycjonowania.
+## Stage 1 - Event Routing Matrix (design decision)
+For each event, define the target channel and partition key.
 
-Minimalna macierz:
+Minimum matrix:
 - `UserCreated.v1`
-  - RabbitMQ: TAK (Auth -> User provisioning)
-  - Kafka: OPCJONALNIE (audit stream)
+  - RabbitMQ: YES (Auth -> User provisioning)
+  - Kafka: OPTIONAL (audit stream)
   - PartitionKey: `UserId`
 - `OrderPlaced.v1`
-  - RabbitMQ: TAK (workflow: downstream reactions)
-  - Kafka: TAK (analityka/replay)
-  - PartitionKey: `UserId` lub `OrderId`
+  - RabbitMQ: YES (workflow: downstream reactions)
+  - Kafka: YES (analytics/replay)
+  - PartitionKey: `UserId` or `OrderId`
 - `PaymentAuthorized.v1`
-  - RabbitMQ: TAK (workflow update statusu zamowienia)
-  - Kafka: TAK (audit, BI)
+  - RabbitMQ: YES (workflow update of order status)
+  - Kafka: YES (audit, BI)
   - PartitionKey: `OrderId`
 - `PaymentFailed.v1`
-  - RabbitMQ: TAK (workflow kompensacyjny)
-  - Kafka: TAK (audit, alerting)
+  - RabbitMQ: YES (compensation workflow)
+  - Kafka: YES (audit, alerting)
   - PartitionKey: `OrderId`
 - `PointsEarned.v1`, `PointsSpent.v1`, `LoyaltyProfileUpdated.v1`
-  - RabbitMQ: opcjonalnie (jesli natychmiastowa akcja workflow)
-  - Kafka: TAK (ledger/replay/analityka)
+  - RabbitMQ: optional (if immediate workflow action is required)
+  - Kafka: YES (ledger/replay/analytics)
   - PartitionKey: `UserId`
 
-## Etap 2 - RabbitMQ jako kanal workflow
-### Auth + User (juz czesciowo gotowe)
-- [x] Zachowaj obecny flow `UserCreated` z outbox Auth i consumerem w User.
-- [ ] Doloz polityke retry i DLQ testowana scenariuszami awarii.
+## Stage 2 - RabbitMQ as workflow channel
+### Auth + User (already partially done)
+- [x] Keep the current `UserCreated` flow with Auth outbox and User consumer.
+- [ ] Add a retry policy and DLQ validated by failure scenarios.
 
-### Payment -> Order (nowa implementacja)
-- [x] Dodaj worker konsumencki Rabbit w OrderService:
+### Payment -> Order (new implementation)
+- [x] Add Rabbit consumer worker in OrderService:
   - `OrderService/src/Infrastructure/Messaging/PaymentAuthorizedConsumerWorker.cs`
-- [x] Obsluz eventy:
-  - `PaymentAuthorized` -> status zamowienia `Paid`.
-  - `PaymentFailed` -> status zamowienia `PaymentFailed` lub uruchom kompensacje.
-- [x] Dodaj idempotent consumer table check po `EventId`.
-- [x] Dodaj explicit ack/nack + requeue policy.
+- [x] Handle events:
+  - `PaymentAuthorized` -> set order status to `Paid`.
+  - `PaymentFailed` -> set order status to `PaymentFailed` or trigger compensation.
+- [x] Add idempotent consumer table check by `EventId`.
+- [x] Add explicit ack/nack + requeue policy.
 
-### Order -> Promotion (opcjonalny workflow)
-- [ ] Jezeli chcesz natychmiastowej aktualizacji profilu lojalnosci:
-  - dodaj Rabbit consumer w PromotionService dla `OrderPlaced`.
-- [ ] Aktualizacja profilu ma byc idempotentna i oparta o `EventId`.
+### Order -> Promotion (optional workflow)
+- [ ] If you need immediate loyalty profile updates:
+  - add a Rabbit consumer in PromotionService for `OrderPlaced`.
+- [ ] Profile update must be idempotent and based on `EventId`.
 
-## Etap 3 - Kafka jako kanal event stream
+## Stage 3 - Kafka as event stream channel
 ### Publisher side
-- [x] Zostaw publikacje Kafka z outboxu w OrderService i PaymantService.
-- [x] Upewnij sie, ze klucz wiadomosci = `PartitionKey`.
-- [x] Dopisz naglowki metadanych:
+- [x] Keep Kafka publishing from outbox in OrderService and PaymantService.
+- [x] Ensure message key = `PartitionKey`.
+- [x] Add metadata headers:
   - `eventType`, `eventVersion`, `occurredOnUtc`, `correlationId`.
 
-### Consumer side (NOWE)
-- [x] DashboardService: utworz consumer(y) Kafka do projekcji read modeli:
+### Consumer side (NEW)
+- [x] DashboardService: create Kafka consumer(s) for read model projections:
   - `orders_projection`
   - `payments_projection`
   - `loyalty_projection`
-- [x] LoggerService: dodaj opcjonalny consumer Kafka do centralnego audytu zdarzen domenowych.
-- [x] Uzyj osobnych `group.id` dla kazdego bounded contextu (dashboard, logger, analytics).
-- [x] Dodaj checkpointing offsetow i mechanizm restart/recovery.
+- [x] LoggerService: add an optional Kafka consumer for centralized domain-event auditing.
+- [x] Use separate `group.id` for each bounded context (dashboard, logger, analytics).
+- [x] Add offset checkpointing and restart/recovery mechanism.
 
-## Etap 4 - Uporzadkowanie granicy Rabbit vs Kafka
-Wariant edukacyjny rekomendowany w 2 krokach:
+## Stage 4 - Clarify Rabbit vs Kafka boundary
+Recommended educational variant in 2 steps:
 
-1) Faza A (latwiejsza): dual publish dla wybranych eventow
-- Rabbit do workflow.
-- Kafka do streamingu i analityki.
+1) Phase A (easier): dual publish for selected events
+- Rabbit for workflow.
+- Kafka for streaming and analytics.
 
-2) Faza B (docelowa): swiadome rozdzielenie
-- Eventy stricte workflow tylko Rabbit.
-- Eventy stricte domenowe tylko Kafka.
-- Eventy hybrydowe (np. `OrderPlaced`) moga zostac na obu, ale tylko z uzasadnieniem biznesowym.
+2) Phase B (target): intentional split
+- Strict workflow events only on Rabbit.
+- Strict domain events only on Kafka.
+- Hybrid events (for example `OrderPlaced`) may stay on both, but only with business justification.
 
-## Etap 5 - Testy obowiazkowe
+## Stage 5 - Mandatory tests
 ### RabbitMQ
-- [ ] Retry i DLQ: wylacz konsumenta, wyslij event, potwierdz przejscie do DLQ.
-- [x] Idempotencja: wyslij ten sam `EventId` 2x, efekt biznesowy tylko 1x.
-- [ ] Recovery: po restarcie workera wiadomosci pending sa dalej obslugiwane.
+- [ ] Retry and DLQ: disable consumer, send event, confirm move to DLQ.
+- [x] Idempotency: send the same `EventId` 2x, business effect happens only once.
+- [ ] Recovery: after worker restart, pending messages are still processed.
 
 ### Kafka
-- [ ] Ordering w partycji: eventy jednego `OrderId/UserId` przychodza we wlasciwej kolejnosci.
-- [ ] Replay: odbuduj projekcje DashboardService od offsetu 0.
-- [ ] Consumer group isolation: dashboard i logger konsumuje niezaleznie.
+- [ ] Ordering in partition: events for one `OrderId/UserId` arrive in correct order.
+- [ ] Replay: rebuild DashboardService projections from offset 0.
+- [ ] Consumer group isolation: dashboard and logger consume independently.
 
 ### End-to-end
-- [ ] `OrderPlaced` -> `PaymentAuthorized` -> aktualizacja statusu zamowienia.
-- [ ] Aktualizacja loyalty po zdarzeniach zamowien i/lub platnosci.
-- [ ] Brak podwojnych skutkow mimo ponownej dostawy wiadomosci.
+- [ ] `OrderPlaced` -> `PaymentAuthorized` -> order status update.
+- [ ] Loyalty update after order and/or payment events.
+- [ ] No duplicate side effects despite message redelivery.
 
-## Etap 6 - Obserwowalnosc i operacje
-- [ ] Dodaj metryki:
-  - outbox lag (czas od `CreatedAt` do publikacji),
-  - consumer lag Kafka,
-  - liczba retry Rabbit,
-  - liczba wiadomosci DLQ.
-- [ ] Dodaj logowanie strukturalne z `EventId`, `CorrelationId`, `EventType`.
-- [ ] Przygotuj runbook awarii brokerow (restart, replay, opruznianie DLQ).
+## Stage 6 - Observability and operations
+- [ ] Add metrics:
+  - outbox lag (time from `CreatedAt` to publish),
+  - Kafka consumer lag,
+  - Rabbit retry count,
+  - DLQ message count.
+- [ ] Add structured logging with `EventId`, `CorrelationId`, `EventType`.
+- [ ] Prepare a broker failure runbook (restart, replay, DLQ draining).
 
-## Kryteria akceptacji PR7
-- [x] Dla kazdego eventu istnieje jawna decyzja Rabbit/Kafka w macierzy.
-- [ ] Workflow krytyczny dziala przez Rabbit z retry + DLQ + idempotencja.
-- [ ] Strumien domenowy dziala przez Kafka i da sie go replayowac.
-- [x] Dashboard/Logger potrafia konsumowac Kafka niezaleznie od workflow.
-- [ ] Testy awaryjne i replay przechodza lokalnie i w CI.
+## PR7 acceptance criteria
+- [x] For each event, there is an explicit Rabbit/Kafka decision in the matrix.
+- [ ] Critical workflow runs through Rabbit with retry + DLQ + idempotency.
+- [ ] Domain stream runs through Kafka and can be replayed.
+- [x] Dashboard/Logger can consume Kafka independently from workflow.
+- [ ] Failure and replay tests pass locally and in CI.
 
-## Sugerowana kolejnosc wdrozenia (2 sprinty)
+## Suggested implementation order (2 sprints)
 Sprint 1:
-- Etap 0, 1, 2 (Auth/User stabilizacja + Payment->Order workflow),
-- testy Rabbit.
+- Stage 0, 1, 2 (Auth/User stabilization + Payment->Order workflow),
+- Rabbit tests.
 
 Sprint 2:
-- Etap 3, 4, 6,
-- consumerzy Kafka w Dashboard/Logger,
-- replay i testy end-to-end.
+- Stage 3, 4, 6,
+- Kafka consumers in Dashboard/Logger,
+- replay and end-to-end tests.

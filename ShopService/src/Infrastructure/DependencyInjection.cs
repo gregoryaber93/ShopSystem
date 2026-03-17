@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ShopService.Application.Abstractions.Persistence;
 using ShopService.Application.Abstractions.Messaging;
+using ShopService.Application.Abstractions.Security;
 using ShopService.Contracts.Grpc.Orders;
 using ShopService.Contracts.Grpc.Products;
 using ShopService.Contracts.Grpc.Promotions;
@@ -27,6 +28,8 @@ public static class DependencyInjection
 
         services.AddDbContext<ShopDbContext>(options =>
             options.UseNpgsql(connectionString));
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
         services.AddScoped<IShopRepository, ShopRepository>();
 
         services.Configure<GrpcClientsOptions>(configuration.GetSection(GrpcClientsOptions.SectionName));

@@ -1,11 +1,13 @@
 using DashboardService.Application.Abstractions;
 using DashboardService.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DashboardService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin,Manager")]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;

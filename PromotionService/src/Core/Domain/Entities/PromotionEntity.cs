@@ -15,4 +15,5 @@ public class PromotionEntity
     public DateTime? StartsAtUtc { get; set; }
     public DateTime? EndsAtUtc { get; set; }
     public decimal? RequiredPoints { get; set; }
+    public Guid? CreatedByUserId { get; set; }
 }

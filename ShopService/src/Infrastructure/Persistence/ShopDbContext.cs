@@ -22,8 +22,13 @@ public class ShopDbContext(DbContextOptions<ShopDbContext> options) : DbContext(
                 .HasMaxLength(100)
                 .IsRequired();
 
+            entity.Property(shop => shop.OwnerUserId)
+                .IsRequired(false);
+
             entity.HasIndex(shop => shop.Code)
                 .IsUnique();
+
+            entity.HasIndex(shop => shop.OwnerUserId);
         });
     }
 }

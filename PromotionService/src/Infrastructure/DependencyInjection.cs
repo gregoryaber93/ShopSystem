@@ -3,9 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PromotionService.Application.Abstractions.Persistence;
 using PromotionService.Application.Abstractions.Caching;
+using PromotionService.Application.Abstractions.Security;
 using PromotionService.Infrastructure.Caching;
 using PromotionService.Infrastructure.Observability;
 using PromotionService.Infrastructure.Persistence;
+using PromotionService.Infrastructure.Security;
 
 namespace PromotionService.Infrastructure;
 
@@ -24,6 +26,9 @@ public static class DependencyInjection
         services.AddScoped<IUserPromotionProfileRepository, UserPromotionProfileRepository>();
         services.AddScoped<ILoyaltyEventStore, LoyaltyEventStore>();
         services.AddScoped<ILoyaltyProjectionRebuilder, LoyaltyProjectionRebuilder>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
 
         var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
         services.AddStackExchangeRedisCache(options =>

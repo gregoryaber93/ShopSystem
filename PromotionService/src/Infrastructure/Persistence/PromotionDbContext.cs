@@ -42,6 +42,9 @@ public class PromotionDbContext(DbContextOptions<PromotionDbContext> options) : 
 
             entity.Property(promotion => promotion.RequiredPoints)
                 .HasPrecision(18, 2);
+
+            entity.Property(promotion => promotion.CreatedByUserId)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<UserPromotionProfileEntity>(entity =>

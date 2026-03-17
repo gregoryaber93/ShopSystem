@@ -3,9 +3,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductService.Application.Abstractions.Persistence;
 using ProductService.Application.Abstractions.Caching;
+using ProductService.Application.Abstractions.Security;
+using ProductService.Application.Abstractions.Shops;
 using ProductService.Infrastructure.Caching;
 using ProductService.Infrastructure.Observability;
 using ProductService.Infrastructure.Persistence;
+using ProductService.Infrastructure.Security;
+using ProductService.Infrastructure.Shops;
 
 namespace ProductService.Infrastructure;
 
@@ -21,6 +25,16 @@ public static class DependencyInjection
 
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductCacheService, ProductCacheService>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
+
+        var shopServiceUrl = configuration[$"{ShopServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5292";
+        services.AddHttpClient<IShopOwnershipClient, HttpShopOwnershipClient>(client =>
+        {
+            client.BaseAddress = new Uri(shopServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
 
         var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
         services.AddStackExchangeRedisCache(options =>

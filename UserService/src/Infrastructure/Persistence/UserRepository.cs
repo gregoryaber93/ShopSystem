@@ -74,6 +74,11 @@ public sealed class UserRepository(UserDbContext dbContext) : IUserRepository
         dbContext.UserRoles.Remove(userRole);
     }
 
+    public void RemoveUser(UserEntity user)
+    {
+        dbContext.Users.Remove(user);
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return dbContext.SaveChangesAsync(cancellationToken);

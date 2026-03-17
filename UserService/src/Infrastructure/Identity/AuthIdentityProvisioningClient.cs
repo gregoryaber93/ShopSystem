@@ -46,6 +46,54 @@ internal sealed class AuthIdentityProvisioningClient(
             ?? throw new InvalidOperationException("AuthService zwrocil pusty wynik podczas provisioningu identity.");
     }
 
+    public async Task<ProvisionedAuthIdentity?> UpdateUserAsync(
+        Guid userId,
+        string email,
+        IReadOnlyCollection<string> roles,
+        string? password,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"api/authentication/internal/users/{userId}")
+        {
+            Content = JsonContent.Create(new
+            {
+                Email = email,
+                Roles = roles,
+                Password = password
+            })
+        };
+
+        ForwardAuthorization(request);
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            var message = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException(message.Trim('"'));
+        }
+
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            var message = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new ArgumentException(message.Trim('"'));
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            throw new UnauthorizedAccessException("Biezacy uzytkownik nie ma uprawnien do aktualizacji identity w AuthService.");
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<ProvisionedAuthIdentity>(cancellationToken: cancellationToken)
+            ?? throw new InvalidOperationException("AuthService zwrocil pusty wynik podczas aktualizacji identity.");
+    }
+
     public async Task RollbackProvisionAsync(Guid userId, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/authentication/internal/users/{userId}");
