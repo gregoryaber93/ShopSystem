@@ -1,0 +1,403 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: shopsystem-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - shopsystem-network
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.9
+    container_name: shopsystem-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "512M"
+      - --reserve-memory
+      - "0M"
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+    ports:
+      - "9092:9092"
+    networks:
+      - shopsystem-network
+
+  authservice-postgres:
+    image: postgres:16
+    container_name: authservice-postgres
+    environment:
+      POSTGRES_DB: authentication_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5443:5432"
+    volumes:
+      - authservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  userservice-postgres:
+    image: postgres:16
+    container_name: userservice-postgres
+    environment:
+      POSTGRES_DB: user_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5442:5432"
+    volumes:
+      - userservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  shopservice-postgres:
+    image: postgres:16
+    container_name: shopservice-postgres
+    environment:
+      POSTGRES_DB: shop_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - shopservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  promotionservice-postgres:
+    image: postgres:16
+    container_name: promotionservice-postgres
+    environment:
+      POSTGRES_DB: promotion_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - promotionservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  productservice-postgres:
+    image: postgres:16
+    container_name: productservice-postgres
+    environment:
+      POSTGRES_DB: product_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - productservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  orderservice-postgres:
+    image: postgres:16
+    container_name: orderservice-postgres
+    environment:
+      POSTGRES_DB: order_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"
+    volumes:
+      - orderservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  paymantservice-postgres:
+    image: postgres:16
+    container_name: paymantservice-postgres
+    environment:
+      POSTGRES_DB: paymant_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    volumes:
+      - paymantservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  loggerservice-postgres:
+    image: postgres:16
+    container_name: loggerservice-postgres
+    environment:
+      POSTGRES_DB: logger_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5444:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logger_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - loggerservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  authservice-api:
+    container_name: authservice-api
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    ports:
+      - "5294:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=authservice-postgres;Port=5432;Database=authentication_service_dev;Username=postgres;Password=postgres
+      UserService__BaseUrl: http://userservice-api:8080
+      UserService__GrpcAddress: http://userservice-api:8081
+      UserService__InternalApiKey: shopsystem-internal-dev-key
+      MessageBrokers__RabbitMq__Host: rabbitmq
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: AuthService.exchange
+      MessageBrokers__RabbitMq__UserCreatedRoutingKey: users.created.v1
+      MessageBrokers__RabbitMq__DeadLetterExchange: AuthService.exchange.dlq
+      Outbox__PollIntervalSeconds: 10
+      Outbox__BatchSize: 25
+      Outbox__MaxRetries: 10
+    depends_on:
+      - authservice-postgres
+      - userservice-api
+      - rabbitmq
+    networks:
+      - shopsystem-network
+
+  userservice-api:
+    container_name: userservice-api
+    restart: unless-stopped
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    ports:
+      - "5300:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
+      ConnectionStrings__PostgreSql: Host=userservice-postgres;Port=5432;Database=user_service_dev;Username=postgres;Password=postgres
+      AuthenticationService__BaseUrl: http://authservice-api:8080
+      InternalApi__ApiKey: shopsystem-internal-dev-key
+      MessageBrokers__RabbitMq__Host: rabbitmq
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: AuthService.exchange
+      MessageBrokers__RabbitMq__UserCreatedRoutingKey: users.created.v1
+      MessageBrokers__RabbitMq__UserCreatedQueue: userservice.users.created.v1
+    depends_on:
+      userservice-postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - shopsystem-network
+
+  shopservice-api:
+    container_name: shopservice-api
+    build:
+      context: ./ShopService
+      dockerfile: Dockerfile
+    ports:
+      - "5292:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=shopservice-postgres;Port=5432;Database=shop_service_dev;Username=postgres;Password=postgres
+      GrpcClients__Products: http://productservice-api:8080
+      GrpcClients__Promotions: http://promotionservice-api:8080
+      GrpcClients__Orders: http://orderservice-api:8080
+      MessageBrokers__RabbitMq__Host: rabbitmq
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: ShopService.exchange
+      MessageBrokers__Kafka__BootstrapServers: redpanda:9092
+      MessageBrokers__Kafka__TopicPrefix: shop
+    depends_on:
+      - shopservice-postgres
+      - rabbitmq
+      - redpanda
+      - productservice-api
+      - promotionservice-api
+      - orderservice-api
+    networks:
+      - shopsystem-network
+
+  promotionservice-api:
+    container_name: promotionservice-api
+    build:
+      context: ./PromotionService
+      dockerfile: Dockerfile
+    ports:
+      - "5293:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=promotionservice-postgres;Port=5432;Database=promotion_service_dev;Username=postgres;Password=postgres
+    depends_on:
+      - promotionservice-postgres
+    networks:
+      - shopsystem-network
+
+  productservice-api:
+    container_name: productservice-api
+    build:
+      context: ./ProductService
+      dockerfile: Dockerfile
+    ports:
+      - "5295:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=productservice-postgres;Port=5432;Database=product_service_dev;Username=postgres;Password=postgres
+      ShopService__BaseUrl: http://shopservice-api:8080
+    depends_on:
+      - productservice-postgres
+    networks:
+      - shopsystem-network
+
+  orderservice-api:
+    container_name: orderservice-api
+    restart: unless-stopped
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    ports:
+      - "5297:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=orderservice-postgres;Port=5432;Database=order_service_dev;Username=postgres;Password=postgres
+      Grpc__PromotionService__Address: http://promotionservice-api:8080
+      Grpc__ProductService__Address: http://productservice-api:8080
+      MessageBrokers__RabbitMq__Host: rabbitmq
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: OrderService.exchange
+      MessageBrokers__RabbitMq__DeadLetterExchange: OrderService.exchange.dlq
+      MessageBrokers__RabbitMq__PaymentEventsExchange: PaymantService.exchange
+      MessageBrokers__RabbitMq__PaymentAuthorizedRoutingKey: paymentauthorized
+      MessageBrokers__RabbitMq__PaymentFailedRoutingKey: paymentfailed
+      MessageBrokers__RabbitMq__PaymentAuthorizedQueue: orderservice.payments.authorized.v1
+      MessageBrokers__Kafka__BootstrapServers: redpanda:9092
+      MessageBrokers__Kafka__TopicPrefix: orders
+    depends_on:
+      orderservice-postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+      promotionservice-api:
+        condition: service_started
+      paymantservice-api:
+        condition: service_started
+    networks:
+      - shopsystem-network
+
+  paymantservice-api:
+    container_name: paymantservice-api
+    build:
+      context: ./PaymantService
+      dockerfile: Dockerfile
+    ports:
+      - "5298:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=paymantservice-postgres;Port=5432;Database=paymant_service_dev;Username=postgres;Password=postgres
+      MessageBrokers__RabbitMq__Host: rabbitmq
+      MessageBrokers__RabbitMq__Port: 5672
+      MessageBrokers__RabbitMq__Username: guest
+      MessageBrokers__RabbitMq__Password: guest
+      MessageBrokers__RabbitMq__Exchange: PaymantService.exchange
+      MessageBrokers__RabbitMq__DeadLetterExchange: PaymantService.exchange.dlq
+      MessageBrokers__Kafka__BootstrapServers: redpanda:9092
+      MessageBrokers__Kafka__TopicPrefix: payments
+    depends_on:
+      - paymantservice-postgres
+      - rabbitmq
+      - redpanda
+    networks:
+      - shopsystem-network
+
+  loggerservice-api:
+    container_name: loggerservice-api
+    restart: unless-stopped
+    build:
+      context: ./LoggerService
+      dockerfile: Dockerfile
+    ports:
+      - "5299:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSql: Host=loggerservice-postgres;Port=5432;Database=logger_service;Username=postgres;Password=postgres
+      MessageBrokers__KafkaConsumers__BootstrapServers: redpanda:9092
+      MessageBrokers__KafkaConsumers__GroupId: logger-audit-v1
+    depends_on:
+      redpanda:
+        condition: service_started
+      loggerservice-postgres:
+        condition: service_healthy
+    networks:
+      - shopsystem-network
+
+  dashboardservice-api:
+    container_name: dashboardservice-api
+    build:
+      context: ./DashboardService
+      dockerfile: Dockerfile
+    ports:
+      - "5301:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      MessageBrokers__KafkaConsumers__BootstrapServers: redpanda:9092
+      MessageBrokers__KafkaConsumers__GroupId: dashboard-projections-v1
+    depends_on:
+      - redpanda
+    networks:
+      - shopsystem-network
+
+volumes:
+  authservice-postgres-data:
+  userservice-postgres-data:
+  shopservice-postgres-data:
+  promotionservice-postgres-data:
+  productservice-postgres-data:
+  orderservice-postgres-data:
+  paymantservice-postgres-data:
+  loggerservice-postgres-data:
+
+networks:
+  shopsystem-network:
+    name: shopsystem-network
