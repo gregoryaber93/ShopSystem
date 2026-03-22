@@ -17,6 +17,8 @@ namespace PaymantService.Api;
 
 public class Program
 {
+    private const string CorsPolicyName = "FrontendDev";
+
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +26,15 @@ public class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddControllers();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(CorsPolicyName, policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -116,6 +127,7 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseCors(CorsPolicyName);
             app.UseMiddleware<CorrelationIdMiddleware>();
             app.UseMiddleware<ExceptionLoggingMiddleware>();
 

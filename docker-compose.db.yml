@@ -1,0 +1,170 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: shopsystem-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - shopsystem-network
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.9
+    container_name: shopsystem-redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "512M"
+      - --reserve-memory
+      - "0M"
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+    ports:
+      - "9092:9092"
+    networks:
+      - shopsystem-network
+
+  authservice-postgres:
+    image: postgres:16
+    container_name: authservice-postgres
+    environment:
+      POSTGRES_DB: authentication_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5443:5432"
+    volumes:
+      - authservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  userservice-postgres:
+    image: postgres:16
+    container_name: userservice-postgres
+    environment:
+      POSTGRES_DB: user_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5442:5432"
+    volumes:
+      - userservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  shopservice-postgres:
+    image: postgres:16
+    container_name: shopservice-postgres
+    environment:
+      POSTGRES_DB: shop_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - shopservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  promotionservice-postgres:
+    image: postgres:16
+    container_name: promotionservice-postgres
+    environment:
+      POSTGRES_DB: promotion_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - promotionservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  productservice-postgres:
+    image: postgres:16
+    container_name: productservice-postgres
+    environment:
+      POSTGRES_DB: product_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - productservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  orderservice-postgres:
+    image: postgres:16
+    container_name: orderservice-postgres
+    environment:
+      POSTGRES_DB: order_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"
+    volumes:
+      - orderservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  paymantservice-postgres:
+    image: postgres:16
+    container_name: paymantservice-postgres
+    environment:
+      POSTGRES_DB: paymant_service_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    volumes:
+      - paymantservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+  loggerservice-postgres:
+    image: postgres:16
+    container_name: loggerservice-postgres
+    environment:
+      POSTGRES_DB: logger_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5444:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logger_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - loggerservice-postgres-data:/var/lib/postgresql/data
+    networks:
+      - shopsystem-network
+
+volumes:
+  authservice-postgres-data:
+  userservice-postgres-data:
+  shopservice-postgres-data:
+  promotionservice-postgres-data:
+  productservice-postgres-data:
+  orderservice-postgres-data:
+  paymantservice-postgres-data:
+  loggerservice-postgres-data:
+
+networks:
+  shopsystem-network:
+    name: shopsystem-network

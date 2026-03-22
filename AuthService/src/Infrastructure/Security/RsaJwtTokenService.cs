@@ -18,7 +18,7 @@ internal sealed class RsaJwtTokenService(IOptions<JwtRsaOptions> options) : IJwt
             throw new InvalidOperationException("JwtRsa:PrivateKeyXml is required for JWT signing.");
         }
 
-        using var rsa = RSA.Create();
+        var rsa = RSA.Create();
         rsa.FromXmlString(_options.PrivateKeyXml);
 
         var credentials = new SigningCredentials(new RsaSecurityKey(rsa), SecurityAlgorithms.RsaSha256);

@@ -1,0 +1,218 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compose:infra:up",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.db.yml",
+        "-f",
+        "docker-compose.brokers.yml",
+        "up",
+        "-d"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:infra:down",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.db.yml",
+        "-f",
+        "docker-compose.brokers.yml",
+        "down"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:all:up",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.yml",
+        "up",
+        "-d",
+        "--build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:all:down",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.yml",
+        "down"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:single:up",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml up -d ${input:singleComposeService}",
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:single:down",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml stop ${input:singleComposeService}",
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:selected:up",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml up -d ${input:selectedComposeServices}",
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:selected:down",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml stop ${input:selectedComposeServices}",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "build:AuthService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/AuthService/AuthService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:DashboardService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/DashboardService/DashboardService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:LoggerService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/LoggerService/LoggerService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:OrderService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/OrderService/OrderService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:PaymantService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/PaymantService/PaymantService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:ProductService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/ProductService/ProductService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:PromotionService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/PromotionService/PromotionService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:ShopService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/ShopService/ShopService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:UserService",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/UserService/UserService.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build:all-services",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "build:AuthService",
+        "build:DashboardService",
+        "build:LoggerService",
+        "build:OrderService",
+        "build:PaymantService",
+        "build:ProductService",
+        "build:PromotionService",
+        "build:ShopService",
+        "build:UserService"
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "singleComposeService",
+      "type": "pickString",
+      "description": "Wybierz jeden serwis docker-compose do uruchomienia/zatrzymania",
+      "options": [
+        "authservice-api",
+        "userservice-api",
+        "shopservice-api",
+        "promotionservice-api",
+        "productservice-api",
+        "orderservice-api",
+        "paymantservice-api",
+        "loggerservice-api",
+        "dashboardservice-api",
+        "rabbitmq",
+        "redpanda"
+      ],
+      "default": "shopservice-api"
+    },
+    {
+      "id": "selectedComposeServices",
+      "type": "promptString",
+      "description": "Podaj serwisy oddzielone spacją, np: shopservice-api productservice-api promotionservice-api",
+      "default": "shopservice-api productservice-api promotionservice-api"
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug AuthService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:AuthService",
+      "program": "${workspaceFolder}/AuthService/src/API/bin/Debug/net9.0/AuthService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/AuthService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5294"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug UserService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:UserService",
+      "program": "${workspaceFolder}/UserService/src/API/bin/Debug/net9.0/UserService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/UserService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5300"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug ShopService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:ShopService",
+      "program": "${workspaceFolder}/ShopService/src/API/bin/Debug/net9.0/ShopService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/ShopService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5292"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug PromotionService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:PromotionService",
+      "program": "${workspaceFolder}/PromotionService/src/API/bin/Debug/net9.0/PromotionService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/PromotionService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5293"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug ProductService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:ProductService",
+      "program": "${workspaceFolder}/ProductService/src/API/bin/Debug/net9.0/ProductService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/ProductService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5295"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug OrderService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:OrderService",
+      "program": "${workspaceFolder}/OrderService/src/API/bin/Debug/net9.0/OrderService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/OrderService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5297"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug PaymantService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:PaymantService",
+      "program": "${workspaceFolder}/PaymantService/src/API/bin/Debug/net9.0/PaymantService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/PaymantService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5298"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug LoggerService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:LoggerService",
+      "program": "${workspaceFolder}/LoggerService/src/API/bin/Debug/net9.0/LoggerService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/LoggerService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5299"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Debug DashboardService.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:DashboardService",
+      "program": "${workspaceFolder}/DashboardService/src/API/bin/Debug/net9.0/DashboardService.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/DashboardService/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5301"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Wszystkie API",
+      "preLaunchTask": "compose:infra:up",
+      "configurations": [
+        "Debug AuthService.Api",
+        "Debug UserService.Api",
+        "Debug ShopService.Api",
+        "Debug PromotionService.Api",
+        "Debug ProductService.Api",
+        "Debug OrderService.Api",
+        "Debug PaymantService.Api",
+        "Debug LoggerService.Api",
+        "Debug DashboardService.Api"
+      ],
+      "stopAll": true
+    }
+  ]
+}

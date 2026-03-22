@@ -16,6 +16,8 @@ namespace AuthService.Api;
 
 public class Program
 {
+    private const string CorsPolicyName = "FrontendDev";
+
     public static async Task Main(string[] args)
     {
         AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
@@ -25,6 +27,15 @@ public class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddControllers();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(CorsPolicyName, policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -122,6 +133,7 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseCors(CorsPolicyName);
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<ExceptionLoggingMiddleware>();
         app.UseAuthentication();
