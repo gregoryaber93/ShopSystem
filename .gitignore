@@ -69,3 +69,34 @@ docker-compose.override.yml
 *.tmp
 *.temp
 *.cache
+
+# Certificates & private keys (security)
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+
+# Local appsettings overrides (may contain secrets)
+appsettings.local.json
+appsettings.*.local.json
+secrets.json
+*.secret
+
+# NCrunch test runner
+*.ncrunch*
+.ncrunchsolution
+
+# SonarQube / SonarCloud
+.sonarqube/
+.sonar/
+
+# Additional coverage formats
+*.opencover.xml
+
+# VS Code Local History extension
+.localhistory/
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
