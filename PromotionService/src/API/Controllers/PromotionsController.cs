@@ -13,7 +13,7 @@ using PromotionService.Contracts.Dtos;
 namespace PromotionService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/promotions")]
 [Authorize(Roles = "Admin,Manager,User")]
 public class PromotionsController(
     IQueryHandler<GetPromotionsQuery, IReadOnlyCollection<PromotionDto>> getPromotionsQueryHandler,

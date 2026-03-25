@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AuthService.Api.Controllers;
 
 [ApiController]
-[Route("api/authentication/internal")]
+[Route("api/auth/internal")]
 [Authorize(Roles = "Admin")]
 public sealed class InternalAuthenticationController(
     ICommandHandler<ProvisionIdentityCommand, ProvisionedIdentityDto?> provisionIdentityCommandHandler,

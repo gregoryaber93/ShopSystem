@@ -5,7 +5,7 @@ using ShopService.Application.Abstractions.Persistence;
 namespace ShopService.Api.Controllers;
 
 [ApiController]
-[Route("api/shops/internal")]
+[Route("api/shop/internal")]
 [Authorize(Roles = "Admin,Manager")]
 public class InternalShopsController(IShopRepository shopRepository) : ControllerBase
 {

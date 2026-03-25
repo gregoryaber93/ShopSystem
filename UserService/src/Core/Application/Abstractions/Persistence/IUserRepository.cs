@@ -6,6 +6,7 @@ public interface IUserRepository
 {
     Task<UserEntity?> GetByIdWithRolesAsync(Guid userId, CancellationToken cancellationToken);
     Task<UserEntity?> GetByEmailWithRolesAsync(string email, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<UserEntity>> GetUsersWithRolesAsync(string? role, CancellationToken cancellationToken);
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<RoleEntity>> GetOrCreateRolesAsync(IReadOnlyCollection<string> roleNames, CancellationToken cancellationToken);
     Task AddUserAsync(UserEntity user, CancellationToken cancellationToken);

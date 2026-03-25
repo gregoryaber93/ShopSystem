@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AuthService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 [AllowAnonymous]
 public class AuthenticationController(
     ICommandHandler<RegisterCommand, AuthResponseDto?> registerCommandHandler,

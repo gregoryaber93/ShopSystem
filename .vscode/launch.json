@@ -162,6 +162,24 @@
         "action": "openExternally",
         "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
       }
+    },
+    {
+      "name": "Debug ApiGateway.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build:ApiGateway",
+      "program": "${workspaceFolder}/ApiGateway/src/API/bin/Debug/net9.0/ApiGateway.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/ApiGateway/src/API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5280"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
     }
   ],
   "compounds": [
@@ -178,6 +196,51 @@
         "Debug PaymantService.Api",
         "Debug LoggerService.Api",
         "Debug DashboardService.Api"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug Wszystkie API + Gateway",
+      "preLaunchTask": "compose:infra:up",
+      "configurations": [
+        "Debug ApiGateway.Api",
+        "Debug AuthService.Api",
+        "Debug UserService.Api",
+        "Debug ShopService.Api",
+        "Debug PromotionService.Api",
+        "Debug ProductService.Api",
+        "Debug OrderService.Api",
+        "Debug PaymantService.Api",
+        "Debug LoggerService.Api",
+        "Debug DashboardService.Api"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug Wszystkie API + Gateway (Docker)",
+      "preLaunchTask": "compose:infra+gateway:up",
+      "configurations": [
+        "Debug AuthService.Api",
+        "Debug UserService.Api",
+        "Debug ShopService.Api",
+        "Debug PromotionService.Api",
+        "Debug ProductService.Api",
+        "Debug OrderService.Api",
+        "Debug PaymantService.Api",
+        "Debug LoggerService.Api",
+        "Debug DashboardService.Api"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug Wybrane API + Gateway (Lokalnie)",
+      "preLaunchTask": "compose:infra:up",
+      "configurations": [
+        "Debug ApiGateway.Api",
+        "Debug ShopService.Api",
+        "Debug ProductService.Api",
+        "Debug PromotionService.Api",
+        "Debug OrderService.Api"
       ],
       "stopAll": true
     }

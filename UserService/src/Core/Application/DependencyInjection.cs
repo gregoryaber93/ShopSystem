@@ -4,6 +4,7 @@ using UserService.Application.Features.Users.Commands.CreateOrUpdateUserProfile;
 using UserService.Application.Features.Users.Commands.CreateUser;
 using UserService.Application.Features.Users.Commands.DeleteUser;
 using UserService.Application.Features.Users.Commands.UpdateUser;
+using UserService.Application.Features.Users.Queries.GetUsers;
 using UserService.Contracts.Dtos;
 
 namespace UserService.Application;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<UpdateUserCommand, UserDto?>, UpdateUserCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteUserCommand, bool>, DeleteUserCommandHandler>();
         services.AddScoped<ICommandHandler<CreateOrUpdateUserProfileCommand, UserDto?>, CreateOrUpdateUserProfileCommandHandler>();
+        services.AddScoped<IQueryHandler<GetUsersQuery, IReadOnlyCollection<UserDto>>, GetUsersQueryHandler>();
         return services;
     }
 }

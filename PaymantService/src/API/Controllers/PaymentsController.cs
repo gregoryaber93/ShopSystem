@@ -12,7 +12,7 @@ using PaymantService.Contracts.Dtos;
 namespace PaymantService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/payments")]
 [Authorize(Roles = "Admin,Manager,User")]
 public class PaymentsController(
     ICommandHandler<ProcessPaymentCommand, PaymentDto> processPaymentCommandHandler,

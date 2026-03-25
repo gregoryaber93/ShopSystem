@@ -11,7 +11,7 @@ using ProductService.Contracts.Dtos;
 namespace ProductService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 [Authorize(Roles = "Admin,Manager,User")]
 public class ProductsController(
     IQueryHandler<GetProductsByShopQuery, IReadOnlyCollection<ProductDto>> getProductsByShopQueryHandler,

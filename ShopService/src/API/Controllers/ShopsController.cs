@@ -10,7 +10,7 @@ using ShopService.Contracts.Dtos;
 namespace ShopService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/shop")]
 [Authorize(Roles = "Admin,Manager,User")]
 public class ShopsController(
     IQueryHandler<GetShopsQuery, IReadOnlyCollection<ShopDto>> getShopsQueryHandler,

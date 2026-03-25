@@ -22,6 +22,25 @@ public sealed class UserRepository(UserDbContext dbContext) : IUserRepository
             .FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<UserEntity>> GetUsersWithRolesAsync(string? role, CancellationToken cancellationToken)
+    {
+        var query = dbContext.Users
+            .AsNoTracking()
+            .Include(user => user.UserRoles)
+            .ThenInclude(userRole => userRole.Role)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            var normalizedRole = role.Trim();
+            query = query.Where(user => user.UserRoles.Any(userRole => userRole.Role.Name == normalizedRole));
+        }
+
+        return await query
+            .OrderBy(user => user.Email)
+            .ToArrayAsync(cancellationToken);
+    }
+
     public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
     {
         return dbContext.Users.AnyAsync(user => user.Email == email, cancellationToken);

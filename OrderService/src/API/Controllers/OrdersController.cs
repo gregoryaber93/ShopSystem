@@ -14,7 +14,7 @@ using OrderService.Contracts.Dtos;
 namespace OrderService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/orders")]
 [Authorize(Roles = "Admin,Manager,User")]
 public class OrdersController(
     ICommandHandler<PlaceOrderCommand, OrderDto> placeOrderCommandHandler,

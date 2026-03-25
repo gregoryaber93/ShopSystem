@@ -2,6 +2,52 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "compose:infra+gateway:up",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "compose:infra:up",
+        "compose:gateway:up"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:infra+gateway:down",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "compose:gateway:down",
+        "compose:infra:down"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:gateway:up",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.yml",
+        "up",
+        "-d",
+        "--build",
+        "apigateway-api"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "compose:gateway:down",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "docker-compose.yml",
+        "stop",
+        "apigateway-api"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "compose:infra:up",
       "type": "shell",
       "command": "docker",
@@ -172,6 +218,16 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "build:ApiGateway",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/ApiGateway/ApiGateway.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "build:all-services",
       "dependsOrder": "parallel",
       "dependsOn": [
@@ -183,7 +239,8 @@
         "build:ProductService",
         "build:PromotionService",
         "build:ShopService",
-        "build:UserService"
+        "build:UserService",
+        "build:ApiGateway"
       ],
       "problemMatcher": []
     }
@@ -194,6 +251,7 @@
       "type": "pickString",
       "description": "Wybierz jeden serwis docker-compose do uruchomienia/zatrzymania",
       "options": [
+        "apigateway-api",
         "authservice-api",
         "userservice-api",
         "shopservice-api",
@@ -212,7 +270,7 @@
       "id": "selectedComposeServices",
       "type": "promptString",
       "description": "Podaj serwisy oddzielone spacją, np: shopservice-api productservice-api promotionservice-api",
-      "default": "shopservice-api productservice-api promotionservice-api"
+      "default": "apigateway-api shopservice-api productservice-api promotionservice-api"
     }
   ]
 }

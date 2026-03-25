@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using AuthService.Application;
+using AuthService.Api.Grpc;
 using AuthService.Api.Middleware;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Persistence;
@@ -26,6 +27,7 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddGrpc();
         builder.Services.AddControllers();
         builder.Services.AddCors(options =>
         {
@@ -138,6 +140,7 @@ public class Program
         app.UseMiddleware<ExceptionLoggingMiddleware>();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGrpcService<AuthIdentityGrpcService>();
         app.MapControllers();
 
         await app.RunAsync();

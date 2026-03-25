@@ -1,49 +1,42 @@
-using System.Net;
-using System.Net.Http.Json;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
+using ShopSystem.Contracts.Grpc.AuthIdentity;
 using UserService.Application.Abstractions.Identity;
 
 namespace UserService.Infrastructure.Identity;
 
 internal sealed class AuthIdentityProvisioningClient(
-    HttpClient httpClient,
+    AuthIdentityGrpc.AuthIdentityGrpcClient grpcClient,
     IHttpContextAccessor httpContextAccessor) : IAuthIdentityProvisioningClient
 {
     public async Task<ProvisionedAuthIdentity?> ProvisionUserAsync(string email, string password, IReadOnlyCollection<string> roles, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "api/authentication/internal/provision-user")
+        try
         {
-            Content = JsonContent.Create(new
-            {
-                Email = email,
-                Password = password,
-                Roles = roles
-            })
-        };
+            var response = await grpcClient.ProvisionUserAsync(
+                new ProvisionUserRequest
+                {
+                    Email = email,
+                    Password = password,
+                    Roles = { roles }
+                },
+                headers: CreateHeaders(),
+                cancellationToken: cancellationToken);
 
-        ForwardAuthorization(request);
-
-        using var response = await httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.Conflict)
+            return new ProvisionedAuthIdentity(Guid.Parse(response.UserId), response.Email, response.Roles.ToArray());
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.AlreadyExists)
         {
             return null;
         }
-
-        if (response.StatusCode == HttpStatusCode.BadRequest)
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.InvalidArgument)
         {
-            var message = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new ArgumentException(message.Trim('"'));
+            throw new ArgumentException(exception.Status.Detail);
         }
-
-        if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.Unauthorized)
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.PermissionDenied || exception.StatusCode == StatusCode.Unauthenticated)
         {
             throw new UnauthorizedAccessException("Biezacy uzytkownik nie ma uprawnien do provisioningu identity w AuthService.");
         }
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<ProvisionedAuthIdentity>(cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException("AuthService zwrocil pusty wynik podczas provisioningu identity.");
     }
 
     public async Task<ProvisionedAuthIdentity?> UpdateUserAsync(
@@ -53,62 +46,65 @@ internal sealed class AuthIdentityProvisioningClient(
         string? password,
         CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Put, $"api/authentication/internal/users/{userId}")
+        try
         {
-            Content = JsonContent.Create(new
+            var request = new UpdateUserRequest
             {
-                Email = email,
-                Roles = roles,
-                Password = password
-            })
-        };
+                UserId = userId.ToString(),
+                Email = email
+            };
+            request.Roles.AddRange(roles);
 
-        ForwardAuthorization(request);
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                request.Password = password;
+            }
 
-        using var response = await httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.NotFound)
+            var response = await grpcClient.UpdateUserAsync(
+                request,
+                headers: CreateHeaders(),
+                cancellationToken: cancellationToken);
+
+            return new ProvisionedAuthIdentity(Guid.Parse(response.UserId), response.Email, response.Roles.ToArray());
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.NotFound)
         {
             return null;
         }
-
-        if (response.StatusCode == HttpStatusCode.Conflict)
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.AlreadyExists)
         {
-            var message = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new InvalidOperationException(message.Trim('"'));
+            throw new InvalidOperationException(exception.Status.Detail);
         }
-
-        if (response.StatusCode == HttpStatusCode.BadRequest)
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.InvalidArgument)
         {
-            var message = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new ArgumentException(message.Trim('"'));
+            throw new ArgumentException(exception.Status.Detail);
         }
-
-        if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.Unauthorized)
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.PermissionDenied || exception.StatusCode == StatusCode.Unauthenticated)
         {
             throw new UnauthorizedAccessException("Biezacy uzytkownik nie ma uprawnien do aktualizacji identity w AuthService.");
         }
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<ProvisionedAuthIdentity>(cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException("AuthService zwrocil pusty wynik podczas aktualizacji identity.");
     }
 
     public async Task RollbackProvisionAsync(Guid userId, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/authentication/internal/users/{userId}");
-        ForwardAuthorization(request);
-
-        using var response = await httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        try
+        {
+            await grpcClient.DeleteUserAsync(
+                new DeleteUserRequest { UserId = userId.ToString() },
+                headers: CreateHeaders(),
+                cancellationToken: cancellationToken);
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.NotFound)
         {
             return;
         }
-
-        response.EnsureSuccessStatusCode();
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.PermissionDenied || exception.StatusCode == StatusCode.Unauthenticated)
+        {
+            throw new UnauthorizedAccessException("Biezacy uzytkownik nie ma uprawnien do usuwania identity w AuthService.");
+        }
     }
 
-    private void ForwardAuthorization(HttpRequestMessage request)
+    private Metadata CreateHeaders()
     {
         var authorizationHeader = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
         if (string.IsNullOrWhiteSpace(authorizationHeader))
@@ -116,6 +112,9 @@ internal sealed class AuthIdentityProvisioningClient(
             throw new InvalidOperationException("Brak naglowka Authorization do przekazania do AuthService.");
         }
 
-        request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+        return new Metadata
+        {
+            { "authorization", authorizationHeader }
+        };
     }
 }

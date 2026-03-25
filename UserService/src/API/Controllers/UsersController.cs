@@ -4,18 +4,28 @@ using UserService.Application.Abstractions.CQRS;
 using UserService.Application.Features.Users.Commands.CreateUser;
 using UserService.Application.Features.Users.Commands.DeleteUser;
 using UserService.Application.Features.Users.Commands.UpdateUser;
+using UserService.Application.Features.Users.Queries.GetUsers;
 using UserService.Contracts.Dtos;
 
 namespace UserService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 [Authorize(Roles = "Admin")]
 public class UsersController(
+    IQueryHandler<GetUsersQuery, IReadOnlyCollection<UserDto>> getUsersQueryHandler,
     ICommandHandler<CreateUserCommand, UserDto?> createUserCommandHandler,
     ICommandHandler<UpdateUserCommand, UserDto?> updateUserCommandHandler,
     ICommandHandler<DeleteUserCommand, bool> deleteUserCommandHandler) : ControllerBase
 {
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyCollection<UserDto>>> GetUsers([FromQuery] string? role, CancellationToken cancellationToken)
+    {
+        var response = await getUsersQueryHandler.Handle(new GetUsersQuery(role), cancellationToken);
+
+        return Ok(response);
+    }
+
     [HttpPost("create")]
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequestDto request, CancellationToken cancellationToken)
     {

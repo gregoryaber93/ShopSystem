@@ -9,6 +9,7 @@ using UserService.Infrastructure.Messaging;
 using UserService.Infrastructure.Observability;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Security;
+using ShopSystem.Contracts.Grpc.AuthIdentity;
 
 namespace UserService.Infrastructure;
 
@@ -32,12 +33,15 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, HttpContextCurrentUserService>();
         services.AddHostedService<UserCreatedConsumerWorker>();
 
-        var authenticationServiceUrl = configuration[$"{AuthenticationServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5294";
-        services.AddHttpClient<IAuthIdentityProvisioningClient, AuthIdentityProvisioningClient>(client =>
+        var authenticationServiceGrpcAddress = configuration[$"{AuthenticationServiceClientOptions.SectionName}:GrpcAddress"]
+            ?? configuration[$"{AuthenticationServiceClientOptions.SectionName}:BaseUrl"]
+            ?? "http://localhost:5295";
+
+        services.AddGrpcClient<AuthIdentityGrpc.AuthIdentityGrpcClient>(options =>
         {
-            client.BaseAddress = new Uri(authenticationServiceUrl);
-            client.Timeout = TimeSpan.FromSeconds(10);
+            options.Address = new Uri(authenticationServiceGrpcAddress);
         });
+        services.AddScoped<IAuthIdentityProvisioningClient, AuthIdentityProvisioningClient>();
 
         var loggerServiceUrl = configuration[$"{LoggerServiceClientOptions.SectionName}:BaseUrl"] ?? "http://localhost:5300";
         services.AddHttpClient<ILoggerServiceClient, HttpLoggerServiceClient>(client =>

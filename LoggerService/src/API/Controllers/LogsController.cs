@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LoggerService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/logs")]
 public class LogsController : ControllerBase
 {
     private readonly ILoggingService _loggingService;

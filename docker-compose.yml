@@ -1,4 +1,19 @@
 services:
+  apigateway-api:
+    container_name: apigateway-api
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    ports:
+      - "5280:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: http://+:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shopsystem-network
+
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: shopsystem-rabbitmq
@@ -162,9 +177,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5294:8080"
+      - "5296:8081"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__PostgreSql: Host=authservice-postgres;Port=5432;Database=authentication_service_dev;Username=postgres;Password=postgres
       UserService__BaseUrl: http://userservice-api:8080
       UserService__GrpcAddress: http://userservice-api:8081
@@ -203,6 +223,7 @@ services:
       Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__PostgreSql: Host=userservice-postgres;Port=5432;Database=user_service_dev;Username=postgres;Password=postgres
       AuthenticationService__BaseUrl: http://authservice-api:8080
+      AuthenticationService__GrpcAddress: http://authservice-api:8081
       InternalApi__ApiKey: shopsystem-internal-dev-key
       MessageBrokers__RabbitMq__Host: rabbitmq
       MessageBrokers__RabbitMq__Port: 5672

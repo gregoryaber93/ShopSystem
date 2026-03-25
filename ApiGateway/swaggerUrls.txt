@@ -1,0 +1,10 @@
+ApiGateway	5280
+AuthService	http://localhost:5294/swagger/index.html
+UserService	 http://localhost:5300/swagger/index.html
+ShopService	 http://localhost:5292/swagger/index.html
+PromotionService	 http://localhost:5293/swagger/index.html
+ProductService	 http://localhost:5295/swagger/index.html
+OrderService	 http://localhost:5297/swagger/index.html
+PaymantService	 http://localhost:5298/swagger/index.html
+LoggerService	 http://localhost:5299/swagger/index.html
+DashboardService	 http://localhost:5301/swagger/index.html
