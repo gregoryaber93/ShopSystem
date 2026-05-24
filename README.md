@@ -13,7 +13,7 @@ The system follows a modular microservice approach with separate services for co
 - `ProductService` – product domain
 - `PromotionService` – promotions and discount rules
 - `OrderService` – order lifecycle
-- `PaymantService` – payment processing
+- `PaymantService` – payment processing (repository name kept as-is)
 - `LoggerService` – logging/audit ingestion
 - `DashboardService` – projection/read-model style dashboard data
 
@@ -61,7 +61,7 @@ This starts all service APIs, PostgreSQL instances, RabbitMQ, and Redpanda on th
 - PromotionService: `http://localhost:5293`
 - ProductService: `http://localhost:5295`
 - OrderService: `http://localhost:5297`
-- PaymantService: `http://localhost:5298`
+- PaymantService (payment): `http://localhost:5298`
 - LoggerService: `http://localhost:5299`
 - DashboardService: `http://localhost:5301`
 - RabbitMQ Management: `http://localhost:15672`
