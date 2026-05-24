@@ -86,6 +86,7 @@ This brings up all APIs + infrastructure on the shared `shopsystem-network`.
 Build all service solutions:
 
 ```bash
+set -euo pipefail
 find . -name '*.sln' | sort | while read -r sln; do
   echo "=== BUILD $sln ==="
   dotnet build "$sln"
