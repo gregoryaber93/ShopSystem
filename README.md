@@ -14,7 +14,7 @@ Main services in this repository:
 - `ProductService` — product catalog domain
 - `PromotionService` — promotions and discount rules
 - `OrderService` — order lifecycle and checkout flow
-- `PaymantService` — payment processing (name kept as-is in repository)
+- `PaymentService` (`PaymantService` in repository) — payment processing
 - `LoggerService` — audit/log ingestion from event streams
 - `DashboardService` — read-model/projection updates for dashboards
 
@@ -73,7 +73,7 @@ This brings up all APIs + infrastructure on the shared `shopsystem-network`.
 - PromotionService: `http://localhost:5293`
 - ProductService: `http://localhost:5295`
 - OrderService: `http://localhost:5297`
-- PaymantService: `http://localhost:5298`
+- PaymentService (`PaymantService`): `http://localhost:5298`
 - LoggerService: `http://localhost:5299`
 - DashboardService: `http://localhost:5301`
 - RabbitMQ AMQP: `localhost:5672`
