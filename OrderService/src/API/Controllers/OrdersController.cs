@@ -15,7 +15,7 @@ namespace OrderService.Api.Controllers;
 
 [ApiController]
 [Route("api/orders")]
-[Authorize(Roles = "Admin,Manager,User")]
+[Authorize("Admin,Manager,User")]
 public class OrdersController(
     ICommandHandler<PlaceOrderCommand, OrderDto> placeOrderCommandHandler,
     ICommandHandler<PlaceOrderFromCartCommand, CartCheckoutResultDto> placeOrderFromCartCommandHandler,

@@ -53,6 +53,21 @@ services:
     networks:
       - shopsystem-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: shopsystem-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    volumes:
+      - redis-data:/data
+    networks:
+      - shopsystem-network
+
   authservice-postgres:
     image: postgres:16
     container_name: authservice-postgres
@@ -282,8 +297,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=promotionservice-postgres;Port=5432;Database=promotion_service_dev;Username=postgres;Password=postgres
+      ConnectionStrings__Redis: redis:6379
     depends_on:
       - promotionservice-postgres
+      - redis
     networks:
       - shopsystem-network
 
@@ -298,9 +315,11 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=productservice-postgres;Port=5432;Database=product_service_dev;Username=postgres;Password=postgres
+      ConnectionStrings__Redis: redis:6379
       ShopService__BaseUrl: http://shopservice-api:8080
     depends_on:
       - productservice-postgres
+      - redis
     networks:
       - shopsystem-network
 
@@ -316,6 +335,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=orderservice-postgres;Port=5432;Database=order_service_dev;Username=postgres;Password=postgres
+      ConnectionStrings__Redis: redis:6379
       Grpc__PromotionService__Address: http://promotionservice-api:8080
       Grpc__ProductService__Address: http://productservice-api:8080
       MessageBrokers__RabbitMq__Host: rabbitmq
@@ -341,6 +361,8 @@ services:
         condition: service_started
       paymantservice-api:
         condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - shopsystem-network
 
@@ -355,6 +377,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__PostgreSql: Host=paymantservice-postgres;Port=5432;Database=paymant_service_dev;Username=postgres;Password=postgres
+      ConnectionStrings__Redis: redis:6379
       MessageBrokers__RabbitMq__Host: rabbitmq
       MessageBrokers__RabbitMq__Port: 5672
       MessageBrokers__RabbitMq__Username: guest
@@ -367,6 +390,7 @@ services:
       - paymantservice-postgres
       - rabbitmq
       - redpanda
+      - redis
     networks:
       - shopsystem-network
 
@@ -418,6 +442,7 @@ volumes:
   orderservice-postgres-data:
   paymantservice-postgres-data:
   loggerservice-postgres-data:
+  redis-data:
 
 networks:
   shopsystem-network:

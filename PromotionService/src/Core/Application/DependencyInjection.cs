@@ -1,3 +1,5 @@
+using System.Reflection;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using PromotionService.Application.Abstractions.Caching;
 using PromotionService.Application.Abstractions.CQRS;
@@ -16,8 +18,15 @@ namespace PromotionService.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services, params Assembly[] additionalAssemblies)
     {
+        var profileAssemblies = new[] { typeof(DependencyInjection).Assembly }
+            .Concat(additionalAssemblies)
+            .Distinct()
+            .ToArray();
+
+        services.AddAutoMapper(profileAssemblies);
+
         // Evaluation pipeline filters — order is significant
         services.AddScoped<IPipelineFilter<EvaluationContext>, ValidationFilter>();
         services.AddScoped<IPipelineFilter<EvaluationContext>, NormalizationFilter>();

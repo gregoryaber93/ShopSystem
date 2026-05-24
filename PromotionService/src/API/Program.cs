@@ -23,7 +23,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddApplication();
+        builder.Services.AddApplication(typeof(Program).Assembly);
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddGrpc();
         builder.Services.AddControllers();

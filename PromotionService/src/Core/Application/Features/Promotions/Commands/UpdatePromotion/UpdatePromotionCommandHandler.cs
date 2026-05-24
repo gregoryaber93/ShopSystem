@@ -1,15 +1,16 @@
+using AutoMapper;
 using PromotionService.Application.Abstractions.CQRS;
 using PromotionService.Application.Abstractions.Persistence;
 using PromotionService.Application.Abstractions.Security;
 using PromotionService.Application.Features.Promotions;
 using PromotionService.Contracts.Dtos;
-using PromotionService.Domain.Entities;
 
 namespace PromotionService.Application.Features.Promotions.Commands.UpdatePromotion;
 
 public sealed class UpdatePromotionCommandHandler(
     IPromotionRepository promotionRepository,
-    ICurrentUserService currentUserService) : ICommandHandler<UpdatePromotionCommand, PromotionDto?>
+    ICurrentUserService currentUserService,
+    IMapper mapper) : ICommandHandler<UpdatePromotionCommand, PromotionDto?>
 {
     public async Task<PromotionDto?> Handle(UpdatePromotionCommand command, CancellationToken cancellationToken)
     {
@@ -39,23 +40,6 @@ public sealed class UpdatePromotionCommandHandler(
 
         await promotionRepository.SaveChangesAsync(cancellationToken);
 
-        return new PromotionDto(
-            promotion.Id,
-            MapType(promotion.Type),
-            promotion.DiscountPercentage,
-            promotion.ProductIds,
-            promotion.StartsAtUtc,
-            promotion.EndsAtUtc,
-            promotion.RequiredPoints);
-    }
-
-    private static PromotionTypeDto MapType(PromotionType type)
-    {
-        return type switch
-        {
-            PromotionType.ProductDiscount => PromotionTypeDto.ProductDiscount,
-            PromotionType.LoyaltyPoints => PromotionTypeDto.LoyaltyPoints,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown promotion type.")
-        };
+        return mapper.Map<PromotionDto>(promotion);
     }
 }

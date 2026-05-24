@@ -1,3 +1,4 @@
+using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using PromotionService.Application.Abstractions.CQRS;
@@ -10,7 +11,8 @@ namespace PromotionService.Api.Grpc;
 
 public sealed class PromotionsGrpcService(
     IQueryHandler<GetPromotionsQuery, IReadOnlyCollection<PromotionService.Contracts.Dtos.PromotionDto>> getPromotionsQueryHandler,
-    IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto> evaluatePromotionsQueryHandler) : PromotionsGrpc.PromotionsGrpcBase
+    IQueryHandler<EvaluatePromotionsQuery, PromotionEvaluationResultDto> evaluatePromotionsQueryHandler,
+    IMapper mapper) : PromotionsGrpc.PromotionsGrpcBase
 {
     public override async Task<GetPromotionsResponse> GetPromotions(GetPromotionsRequest request, ServerCallContext context)
     {
@@ -25,7 +27,7 @@ public sealed class PromotionsGrpcService(
             : promotions;
 
         var response = new GetPromotionsResponse();
-        response.Promotions.AddRange(filtered.Select(MapPromotion));
+        response.Promotions.AddRange(filtered.Select(mapper.Map<ShopSystem.Contracts.Grpc.Promotions.PromotionDto>));
         return response;
     }
 
@@ -53,22 +55,8 @@ public sealed class PromotionsGrpcService(
                 evaluatedAtUtc)),
             context.CancellationToken);
 
-        var response = new EvaluatePromotionsResponse
-        {
-            UserId = evaluation.UserId.ToString(),
-            Subtotal = decimal.ToDouble(evaluation.Subtotal),
-            TotalDiscountPercentage = decimal.ToDouble(evaluation.TotalDiscountPercentage),
-            DiscountAmount = decimal.ToDouble(evaluation.DiscountAmount),
-            FinalPrice = decimal.ToDouble(evaluation.FinalPrice)
-        };
-
-        response.AppliedPromotions.AddRange(evaluation.AppliedPromotions.Select(applied => new ShopSystem.Contracts.Grpc.Promotions.AppliedPromotionDto
-        {
-            PromotionId = applied.PromotionId.ToString(),
-            Type = MapType(applied.Type),
-            DiscountPercentage = decimal.ToDouble(applied.DiscountPercentage),
-            Reason = applied.Reason
-        }));
+        var response = mapper.Map<EvaluatePromotionsResponse>(evaluation);
+        response.AppliedPromotions.AddRange(evaluation.AppliedPromotions.Select(mapper.Map<ShopSystem.Contracts.Grpc.Promotions.AppliedPromotionDto>));
 
         return response;
     }
@@ -80,37 +68,4 @@ public sealed class PromotionsGrpcService(
         return started && notEnded;
     }
 
-    private static ShopSystem.Contracts.Grpc.Promotions.PromotionDto MapPromotion(PromotionService.Contracts.Dtos.PromotionDto promotion)
-    {
-        var mapped = new ShopSystem.Contracts.Grpc.Promotions.PromotionDto
-        {
-            Id = promotion.Id.ToString(),
-            Type = MapType(promotion.Type),
-            DiscountPercentage = decimal.ToDouble(promotion.DiscountPercentage),
-            RequiredPoints = promotion.RequiredPoints is null ? 0 : decimal.ToDouble(promotion.RequiredPoints.Value)
-        };
-
-        if (promotion.StartsAtUtc is not null)
-        {
-            mapped.StartsAtUtc = Timestamp.FromDateTime(DateTime.SpecifyKind(promotion.StartsAtUtc.Value, DateTimeKind.Utc));
-        }
-
-        if (promotion.EndsAtUtc is not null)
-        {
-            mapped.EndsAtUtc = Timestamp.FromDateTime(DateTime.SpecifyKind(promotion.EndsAtUtc.Value, DateTimeKind.Utc));
-        }
-
-        mapped.ProductIds.AddRange((promotion.ProductIds ?? []).Select(id => id.ToString()));
-        return mapped;
-    }
-
-    private static PromotionType MapType(PromotionTypeDto type)
-    {
-        return type switch
-        {
-            PromotionTypeDto.ProductDiscount => PromotionType.ProductDiscount,
-            PromotionTypeDto.LoyaltyPoints => PromotionType.LoyaltyPoints,
-            _ => (PromotionType)0
-        };
-    }
 }

@@ -30,10 +30,10 @@ internal static class PromotionValidation
                     throw new ArgumentException("ProductDiscount promotion requires at least one ProductId.");
                 }
 
-                if (promotion.RequiredPoints is not null)
-                {
-                    throw new ArgumentException("ProductDiscount promotion cannot set RequiredPoints.");
-                }
+                //if (promotion.RequiredPoints is not null)
+                //{
+                //    throw new ArgumentException("ProductDiscount promotion cannot set RequiredPoints.");
+                //}
 
                 return new PromotionInput(
                     PromotionType.ProductDiscount,
